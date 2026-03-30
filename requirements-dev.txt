@@ -1,0 +1,6 @@
+pytest==8.2.0
+faker==24.11.0
+pyspark==3.5.1
+pandas==2.2.2
+pyarrow==16.1.0
+confluent-kafka==2.4.0

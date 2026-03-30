@@ -1,0 +1,161 @@
+version: "3.8"
+
+services:
+  # ─── Kafka (KRaft mode — no ZooKeeper) ──────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.6.1
+    hostname: kafka
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "9101:9101"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_JMX_PORT: 9101
+      KAFKA_JMX_HOSTNAME: localhost
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:29093"
+      KAFKA_LISTENERS: "PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_HOST://0.0.0.0:9092"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "PLAINTEXT"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: "MkU3OEVBNTcwNTJENDM2Qk"
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+
+  # ─── Topic initialiser ───────────────────────────────────────────────────────
+  kafka-setup:
+    image: confluentinc/cp-kafka:7.6.1
+    container_name: kafka-setup
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: >
+      bash -c "
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic listen_events      --partitions 3 --replication-factor 1 &&
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic page_view_events  --partitions 3 --replication-factor 1 &&
+        kafka-topics --bootstrap-server kafka:29092 --create --if-not-exists --topic auth_events       --partitions 3 --replication-factor 1 &&
+        echo 'Topics created successfully'
+      "
+    restart: "no"
+
+  # ─── Event Producer ──────────────────────────────────────────────────────────
+  event-producer:
+    build:
+      context: ./event_producer
+    container_name: event-producer
+    depends_on:
+      kafka-setup:
+        condition: service_completed_successfully
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      EVENTS_PER_SECOND: "10"
+      NUM_USERS: "1000"
+      NUM_SONGS: "500"
+    volumes:
+      - ./event_producer/data:/app/data
+    restart: unless-stopped
+
+  # ─── Spark master ────────────────────────────────────────────────────────────
+  spark-master:
+    image: bitnami/spark:3.5.1
+    container_name: spark-master
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8080:8080"
+      - "7077:7077"
+    volumes:
+      - datalake:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  spark-worker:
+    image: bitnami/spark:3.5.1
+    container_name: spark-worker
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: "spark://spark-master:7077"
+      SPARK_WORKER_MEMORY: "2g"
+      SPARK_WORKER_CORES: "2"
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    volumes:
+      - datalake:/data
+
+  # ─── Spark Streaming job ─────────────────────────────────────────────────────
+  spark-streaming:
+    build:
+      context: ./spark_streaming
+    container_name: spark-streaming
+    depends_on:
+      kafka-setup:
+        condition: service_completed_successfully
+      spark-master:
+        condition: service_healthy
+    environment:
+      KAFKA_BOOTSTRAP_SERVERS: "kafka:29092"
+      DATALAKE_PATH: "/data/lake"
+      CHECKPOINT_PATH: "/data/checkpoints"
+      TRIGGER_INTERVAL: "2 minutes"
+      SPARK_MASTER: "spark://spark-master:7077"
+    volumes:
+      - datalake:/data
+    restart: unless-stopped
+
+  # ─── Batch processing job (runs every hour) ───────────────────────────────────
+  batch-processor:
+    build:
+      context: ./batch_processing
+    container_name: batch-processor
+    depends_on:
+      spark-master:
+        condition: service_healthy
+    environment:
+      DATALAKE_PATH: "/data/lake"
+      ANALYTICS_PATH: "/data/lake/analytics"
+      SPARK_MASTER: "spark://spark-master:7077"
+      BATCH_INTERVAL_SECONDS: "3600"
+    volumes:
+      - datalake:/data
+    restart: unless-stopped
+
+  # ─── Analytics Dashboard ──────────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: ./dashboard
+    container_name: dashboard
+    depends_on:
+      - batch-processor
+    environment:
+      ANALYTICS_PATH: "/data/lake/analytics"
+    ports:
+      - "8501:8501"
+    volumes:
+      - datalake:/data
+    restart: unless-stopped
+
+volumes:
+  datalake:
+    driver: local
