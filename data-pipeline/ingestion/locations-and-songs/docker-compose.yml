@@ -1,0 +1,9 @@
+services:
+  ingest:
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    command:
+      - ${GCS_BUCKET_NAME}
+    environment:
+      - PYTHONUNBUFFERED=1

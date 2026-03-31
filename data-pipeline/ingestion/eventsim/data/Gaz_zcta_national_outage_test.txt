@@ -1,0 +1,2 @@
+GEOID	POP10	HU10	ALAND	AWATER	ALAND_SQMI	AWATER_SQMI	INTPTLAT	INTPTLONG                                                                                                                                                                                                                               
+99925	819	400	144503281	36906383	      55.793	      14.250	 55.550204	-132.945933                                                                                                                       

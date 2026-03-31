@@ -1,0 +1,12 @@
+default: 
+  target: sqlfluff
+  outputs:
+    sqlfluff:
+      type: bigquery
+      method: service-account
+      keyfile: "{{ env_var('DBT_GOOGLE_BIGQUERY_KEYFILE') }}"
+      project: "{{ env_var('DBT_GCP_PROJECT') }}"
+      dataset: "{{ env_var('DBT_BIGQUERY_DATASET') }}"
+      threads: 8
+      timeout_seconds: 300
+      priority: interactive

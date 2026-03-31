@@ -1,0 +1,32 @@
+{
+	"name": "sink-gcs-eventsim",
+	"config": {
+		"connector.class": "io.aiven.kafka.connect.gcs.GcsSinkConnector",
+		"tasks.max": "3",
+		"topics": "listen_events,page_view_events,status_change_events,user_info",
+		"gcs.bucket.name": "web-events-bucket",
+		"gcs.credentials.default" : true,
+		"format.output.type": "jsonl",
+		"format.output.envelope": false,
+		"format.output.fields": "value",
+		"_format.output.fields": "key,value,offset,timestamp,headers",
+		"file.name.prefix": "raw/",
+		"file.name.timestamp.timezone": "UTC",
+		"file.name.timestamp.source": "wallclock",
+		"file.name.template": "{{topic}}/date={{timestamp:unit=yyyy}}-{{timestamp:unit=MM}}-{{timestamp:unit=dd}} {{timestamp:unit=HH}}:00:00+00/{{partition:padding=true}}-{{start_offset:padding=true}}.gz",
+		"file.max.records": 1000000,
+		"offset.flush.interval.ms": 300000,
+		"key.converter": "org.apache.kafka.connect.storage.StringConverter",
+		"_key.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+		"key.converter.schemas.enable": false,
+		"value.converter": "org.apache.kafka.connect.json.JsonConverter",
+		"_value.converter": "org.apache.kafka.connect.converters.ByteArrayConverter",
+		"__value.converter": "org.apache.kafka.connect.storage.StringConverter",
+		"value.converter.schemas.enable": false,
+		"errors.tolerance": "all",
+		"errors.deadletterqueue.topic.name": "connect_sink_gcs",
+		"errors.log.include.messages": true,
+		"errors.deadletterqueue.context.headers.enable": true,
+		"errors.deadletterqueue.topic.replication.factor": 1
+	}
+}

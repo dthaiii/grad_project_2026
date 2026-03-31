@@ -1,0 +1,240 @@
+version: 2
+
+models:
+  - name: stg_users
+    description: >
+      Staging table for user data, including name, registration time and initial user tier level.
+      This table is built incrementally by adding new data at each run.
+    config:
+      tags: "staging"
+    columns:
+      - name: event_datetime
+        data_type: timestamp
+        description: The time when user info was emitted from the source application.
+
+      - name: date
+        data_type: date
+        description: The date field in the hive partition of the external source.
+
+      - name: h
+        data_type: integer
+        description: The date field in the hive partition of the external source.
+
+      - name: user_id
+        data_type: integer
+        description: The unique id of the user.
+
+      - name: first_name
+        data_type: string
+        description: The first name of the user.
+
+      - name: last_name
+        data_type: string
+        description: The last name of the user.
+
+      - name: gender
+        data_type: string
+        description: The gender of the user.
+
+      - name: level
+        data_type: string
+        description: The initial level of the user at the time of registration.
+        tests:
+          - accepted_values:
+              values:
+                - "free"
+                - "paid"
+              severity: error
+
+      - name: registration_datetime
+        data_type: timestamp
+        description: The time when the user registered.
+
+  - name: stg_status_change_events
+    description: >
+      Staging table for status change events, which refer to a user upgrading / downgrading
+      their user subscription level.
+    config:
+      tags: "staging"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - event_datetime
+            - user_id
+            - prev_level
+          severity: error
+    columns:
+      - name: event_datetime
+        data_type: timestamp
+        description: The time when status change event occurred in the source application.
+
+      - name: date
+        data_type: date
+        description: The date field in the hive partition of the external source.
+
+      - name: h
+        data_type: integer
+        description: The date field in the hive partition of the external source.
+
+      - name: user_id
+        data_type: integer
+        description: The unique id of the user.
+
+      - name: prev_level
+        data_type: string
+        description: >
+          The subscription level of the user prior to this status change event taking place.
+          For example, prev_level="free" means that this status change event is an upgrade.
+        tests:
+          - accepted_values:
+              values:
+                - "free"
+                - "paid"
+              severity: error
+
+  - name: stg_listen_events
+    description: >
+      Staging table for listen event data, which refer to a user listening to a song.
+    config:
+      tags: "staging"
+    columns:
+      - name: event_datetime
+        data_type: timestamp
+        description: The time when page view event occurred in the source application.
+
+      - name: date
+        data_type: date
+        description: The date field in the hive partition of the external source.
+
+      - name: h
+        data_type: integer
+        description: The date field in the hive partition of the external source.
+
+      - name: user_id
+        data_type: integer
+        description: The unique id of the user assigned by the source application.
+        
+      - name: postal_code
+        data_type: string
+        description: The postal code of the user during this page view event.
+      
+      - name: city
+        data_type: integer
+        description: The city of the user during this page view event.
+      
+      - name: state
+        data_type: integer
+        description: The state of the user during this page view event.
+
+      - name: level
+        data_type: string
+        description: >
+          The subscription level of the user during this page view event.
+        tests:
+          - accepted_values:
+              values:
+                - "free"
+                - "paid"
+              severity: error
+
+      - name: song
+        data_type: string
+        description: Title of the track.
+        tests:
+          - not_null:
+              severity: error
+
+      - name: artist
+        data_type: string
+        description: Name(s) of the artist(s) whom this track is credited to.
+        tests:
+          - not_null:
+              severity: error
+
+      - name: duration
+        data_type: float
+        description: Duration of the track.
+        tests:
+          - not_null:
+              severity: error
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+              severity: error
+  
+  - name: stg_page_view_events
+    description: >
+      Staging table for page view event data, which refer to whenever a user accesses a page.
+    config:
+      tags: "staging"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - event_datetime
+            - user_id
+            - session_id
+            - item_in_session
+          severity: error
+    columns:
+      - name: event_datetime
+        data_type: timestamp
+        description: The time when page view event occurred in the source application.
+
+      - name: date
+        data_type: date
+        description: The date field in the hive partition of the external source.
+
+      - name: h
+        data_type: integer
+        description: The date field in the hive partition of the external source.
+
+      - name: user_id
+        data_type: integer
+        description: The unique id of the user assigned by the source application.
+        
+      - name: postal_code
+        data_type: string
+        description: The postal code of the user during this page view event.
+      
+      - name: city
+        data_type: integer
+        description: The city of the user during this page view event.
+      
+      - name: state
+        data_type: integer
+        description: The state of the user during this page view event.
+
+      - name: level
+        data_type: string
+        description: >
+          The subscription level of the user during this page view event.
+        tests:
+          - accepted_values:
+              values:
+                - "free"
+                - "paid"
+              severity: error
+
+      - name: session_id
+        data_type: integer
+        description: >
+          The unique id assigned by the source application to the session
+          that this page view event is a part of.
+
+      - name: item_in_session
+        data_type: integer
+        description: The chronological position of this page view event within its session.
+
+      - name: page
+        data_type: string
+        description: The page being viewed.
+
+      - name: user_agent
+        data_type: string
+        description: The user agent used to access this page.
+      
+      - name: ad_revenue
+        data_type: string
+        description: >
+          The ad revenue generated from ads shown on this page.
+          Note: this field is NULL when there are no ads on this page.

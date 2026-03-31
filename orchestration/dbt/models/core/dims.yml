@@ -1,0 +1,70 @@
+version: 2
+
+models:
+  - name: dim_users
+    description: >
+      Contains information on users, including registration time, name and user subscription level.
+      Note: a new row is created for each user whenever the user's subscription level changes. 
+      Each row has a row_effective_datetime and row_expiry_datetime between which the user has 
+      the subscription level stated in the row.
+    config:
+      tags: "dimension"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - user_id
+            - row_effective_datetime
+          severity: error
+    columns:
+      - name: user_id
+        data_type: integer
+        description: The unique id of the user.
+
+      - name: first_name
+        data_type: string
+        description: The first name of the user.
+
+      - name: last_name
+        data_type: string
+        description: The last name of the user.
+
+      - name: gender
+        data_type: string
+        description: The gender of the user.
+
+      - name: registration_datetime
+        data_type: timestamp
+        description: The time when the user registered.
+
+      - name: level
+        data_type: string
+        description: The subscription level of the user for the period of this row.
+
+      - name: row_effective_datetime
+        data_type: timestamp
+        description: The time at which this row takes effect.
+
+      - name: row_expiry_datetime
+        data_type: timestamp
+        description: The time at which this row expires (i.e., the user changes subscription level)
+
+  - name: dim_pages
+    description: >
+      Contains information on pages, including page name and category/function.
+    config:
+      tags: "dimension"
+    columns:
+      - name: pk_page
+        data_type: string
+        description: Primary key for this table, representing a page of the application.
+
+      - name: page_name
+        data_type: string
+        description: The name of the page.
+
+      - name: page_category
+        data_type: string
+        description: >
+          The category of the given page, which can be one of the following:
+          'Platform Information', 'Landing', 'Registration', 'Customisation', 'Streaming',
+          'Advertising', 'Error', 'Authentication', 'Subscription', 'UNKNOWN'

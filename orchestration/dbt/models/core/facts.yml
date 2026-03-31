@@ -1,0 +1,131 @@
+version: 2
+
+models:
+  - name: fact_listen_events
+    description: >
+      Each row represents a user listening to a song at a specific time.
+    config:
+      tags: "fact"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - event_datetime
+            - pk_user
+            - pk_song
+          severity: error
+    columns:
+      - name: event_datetime
+        data_type: timestamp
+        description: The time when the user starts listening to this song.
+
+      - name: pk_user
+        data_type: string
+        description: Foreign key referencing the user dimension for this listen event.
+        tests:
+          - relationships:
+              field: pk_user
+              to: ref('dim_users')
+
+      - name: pk_song
+        data_type: string
+        description: Foreign key referencing the song dimension for this listen event.
+        tests:
+          - relationships:
+              field: pk_song
+              to: ref('dim_songs')
+
+      - name: pk_location
+        data_type: string
+        description: Foreign key referencing the user dimension for this listen event.
+        tests:
+          - relationships:
+              field: pk_location
+              to: ref('dim_locations')
+
+  - name: fact_session_events
+    description: >
+      Each row represents a session, with facts including the session length and ad revenue.
+    config:
+      tags: "fact"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - session_start_datetime
+            - session_id
+            - pk_user
+          severity: error
+    columns:
+      - name: session_start_datetime
+        data_type: timestamp
+        description: The time when the user starts this session.
+
+      - name: session_id
+        data_type: integer
+        description: The unique id assigned to this session by the source application.
+
+      - name: pk_user
+        data_type: string
+        description: Foreign key referencing the user dimension for this session event.
+        tests:
+          - relationships:
+              field: pk_user
+              to: ref('dim_users')
+
+      - name: pk_entry_page
+        data_type: string
+        description: >
+          The first page in this session. Foreign key referencing the page dimension.
+        tests:
+          - relationships:
+              field: pk_page
+              to: ref('dim_pages')
+
+      - name: pk_location
+        data_type: string
+        description: Foreign key referencing the location dimension for this session.
+        tests:
+          - relationships:
+              field: pk_location
+              to: ref('dim_locations')
+
+      - name: session_seconds
+        data_type: float
+        description: The duration of this session in seconds.
+        tests:
+          - not_null:
+              severity: warn
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+              severity: warn
+
+      - name: num_pages_visited
+        data_type: integer
+        description: The number of pages the user visited during this session.
+        tests:
+          - not_null:
+              severity: warn
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: false
+              severity: warn
+
+      - name: num_ads_served
+        data_type: integer
+        description: The number of ads served to the user during this session.
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              severity: warn
+
+      - name: total_ad_revenue
+        data_type: integer
+        description: >
+          The total ad revenue generated during this session.
+          Note: This is NULL when the user is on the 'paid' subscription tier.
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              severity: warn

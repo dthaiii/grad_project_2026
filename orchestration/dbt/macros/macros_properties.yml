@@ -1,0 +1,39 @@
+version: 2
+
+macros:
+  - name: standardise_postal_code
+    description: >
+      This macro returns the postal code as a string in the standard format of the specified country.
+    arguments:
+      - name: postal_code
+        type: int or string
+      - name: country_code
+        type: string
+        description: >
+          The 2-letter country code (ISO 3166-1 alpha-2 code) identifying the country 
+          that the postal_code belongs to.
+
+  - name: get_value_from_query
+    description: >
+      This macro returns a value from a simple select query of the form:
+        `SELECT {{ selection_arg }} FROM {{ table }}`
+      The select query must return a single value.
+    arguments:
+      - name: selection_arg
+        type: string
+        description: >
+          The SELECT clause of the query. This should return a single column with a single value,
+          and is usually an aggregation over the entire table, e.g. "MAX(event_datetime)".
+      - name: table
+        type: string
+        description: The fully qualified name of the table to select from.
+
+  - name: get_page_category
+    description: >
+      This macro returns the category of a page given the name of the page,
+      based on predefined rules.
+    arguments:
+      - name: page_name
+        type: string
+        description: The name of the application page.
+  
