@@ -41,7 +41,7 @@ with DAG(
     default_args = default_args,
     description = f'Hourly data pipeline to generate dims and facts for streamify',
     schedule_interval="5 * * * *", #At the 5th minute of every hour
-    start_date=datetime(2022,3,26,18),
+    start_date=datetime(2026,3,8,18),
     catchup=False,
     max_active_runs=1,
     user_defined_macros=MACRO_VARS,

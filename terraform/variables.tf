@@ -33,15 +33,15 @@ variable "network" {
   type        = string
 }
 
-variable "stg_bq_dataset" {
+variable "stg_bq_dataset_name" {
   description = "Storage class type for your bucket. Check official docs for more info."
-  default     = "eventsim-stg"
+  default     = "eventsim_stgging"
   type        = string
 }
 
-variable "prod_bq_dataset" {
+variable "prod_bq_dataset_name" {
   description = "Storage class type for your bucket. Check official docs for more info."
-  default     = "eventsim-prod"
+  default     = "eventsim_production"
   type        = string
 }
 

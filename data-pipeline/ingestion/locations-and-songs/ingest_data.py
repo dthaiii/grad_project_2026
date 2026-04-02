@@ -14,14 +14,14 @@ import requests
 
 from google.cloud import storage
 
-LOCATION_DATA_URL = "https://github.com/cpwill01/eventsim/raw/refs/heads/main/data/US.txt"
+LOCATION_DATA_URL = "https://github.com/dthaiii/grad_project_2026/blob/main/data-pipeline/ingestion/eventsim/data/US.txt"
 LOCATION_COLUMN_NAMES = ["Country Code", "Postal Code", "City", "State", "State Code",
                 "Borough/County", "Borough/County Code","NA","NA","lat","long","acc"]
 LOCATION_KEEP_COLS = ["Country Code", "Postal Code", "City", "State", "State Code",
                 "Borough/County", "Borough/County Code"]
 LOCATION_OUTFILE_NAME = "raw/flat_files/locations.parquet"
 
-SONG_DATA_URL = "https://github.com/cpwill01/eventsim/raw/refs/heads/main/data/listen_counts.txt.gz"
+SONG_DATA_URL = "https://github.com/dthaiii/grad_project_2026/blob/main/data-pipeline/ingestion/eventsim/data/US.txt.gz"
 SONG_COLUMN_NAMES = ["Track ID", "Artist", "Title", "Duration", "Listen Count", "Genre"]
 SONG_KEEP_COLS = ["Track ID", "Artist", "Title", "Duration", "Genre"]
 SONG_OUTFILE_NAME = "raw/flat_files/songs.parquet"

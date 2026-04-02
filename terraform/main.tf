@@ -18,7 +18,7 @@ provider "google" {
 
 resource "google_compute_firewall" "port_rules" {
   project     = var.project
-  name        = "kafka-broker-port"
+  name        = "kafka-broker-port-rule"
   network     = var.network
   description = "Opens port 9092 in the Kafka VM for Spark cluster to connect"
 
@@ -33,7 +33,7 @@ resource "google_compute_firewall" "port_rules" {
 }
 
 resource "google_compute_instance" "kafka_vm_instance" {
-  name                      = "vm-kafka-instance"
+  name                      = "vm-kafka"
   machine_type              = "e2-standard-4"
   tags                      = ["kafka"]
   allow_stopping_for_update = true
@@ -54,7 +54,7 @@ resource "google_compute_instance" "kafka_vm_instance" {
 
 
 resource "google_compute_instance" "airflow_vm_instance" {
-  name                      = "vm-airflow-instance"
+  name                      = "vm-airflow"
   machine_type              = "e2-standard-2"
   allow_stopping_for_update = true
 
@@ -142,7 +142,7 @@ resource "google_dataproc_cluster" "mulitnode_spark_cluster" {
 
 }
 resource "google_service_account" "dataproc_worker_sa" {
-  account_id   = "dataproc-worker-sa"
+  account_id   = "dataproc-worker-sa-v2"
   display_name = "Dataproc Worker Service Account"
   project      = var.project
 }
@@ -161,14 +161,14 @@ resource "google_project_iam_member" "dataproc_storage_admin_role" {
 
 
 resource "google_bigquery_dataset" "stg_dataset" {
-  dataset_id                 = var.stg_bq_dataset
+  dataset_id                 = var.stg_bq_dataset_name
   project                    = var.project
   location                   = var.region
   delete_contents_on_destroy = true
 }
 
 resource "google_bigquery_dataset" "prod_dataset" {
-  dataset_id                 = var.prod_bq_dataset
+  dataset_id                 = var.prod_bq_dataset_name
   project                    = var.project
   location                   = var.region
   delete_contents_on_destroy = true

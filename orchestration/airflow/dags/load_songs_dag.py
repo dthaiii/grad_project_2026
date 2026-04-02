@@ -19,7 +19,7 @@ default_args ={
 
 AIRFLOW_HOME = os.environ.get('AIRFLOW_HOME', '/opt/airflow')
 
-URL = 'https://github.com/ankurchavda/streamify/raw/main/dbt/seeds/songs.csv'
+URL = 'https://github.com/dthaiii/grad_project_2026/blob/main/orchestration/dbt/seeds/songs.csv'
 CSV_FILENAME = 'songs.csv'
 PARQUET_FILENAME = CSV_FILENAME.replace('csv', 'parquet')
 
@@ -66,7 +66,7 @@ with DAG(
     description = f'Execute only once to create songs table in bigquery',
     schedule_interval="@once", #At the 5th minute of every hour
     start_date=datetime(2026,3,8),
-    end_date=datetime(2026,3,31),
+    end_date=datetime(2026,4,8),
     catchup=True,
     tags=['streamify']
 ) as dag:
