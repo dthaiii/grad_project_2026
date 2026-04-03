@@ -1,6 +1,7 @@
 INSERT {{ BIGQUERY_DATASET }}.{{ AUTH_EVENTS_TABLE }}
 SELECT
     ts,
+    PARSE_DATE('%m%d%H', '{{ EXECUTION_DATETIME_STR }}') AS date,
     COALESCE(level, 'NA') AS level,
     COALESCE(city, 'NA') AS city,
     COALESCE(state, 'NA') AS state,

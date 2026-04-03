@@ -73,25 +73,12 @@ sources:
             data_type: string
           - name: zip
             data_type: integer
-      - name: listen_events_ext
-        description: "External table of listen events, stored as gz-compressed json in Cloud Storage"
-        external:
-          location: "gs://{{ env_var('DBT_GCS_BUCKET_NAME') }}/raw/listen_events/*"
-          options:
-            format: json
-            hive_partition_uri_prefix: "gs://{{ env_var('DBT_GCS_BUCKET_NAME') }}/raw/listen_events/"
-          partitions:
-            - name: date
-              data_type: timestamp
-
-      - name: page_view_events_ext
-        description: "External table of page view events, stored as gz-compressed json in Cloud Storage"
-        external:
-          location: "gs://{{ env_var('DBT_GCS_BUCKET_NAME') }}/raw/page_view_events/*"
-          options:
-            format: json
-            hive_partition_uri_prefix: "gs://{{ env_var('DBT_GCS_BUCKET_NAME') }}/raw/page_view_events/"
-          partitions:
-            - name: date
-              data_type: timestamp
+      - name: listen_events
+        description: "Table of listen events, loaded via Airflow into BigQuery"
+      - name: page_view_events
+        description: "Table of page view events, loaded via Airflow into BigQuery"
+      - name: auth_events
+        description: "Table of auth events, loaded via Airflow into BigQuery"
+      - name: status_change_events
+        description: "Table of status change events, loaded via Airflow into BigQuery"
         

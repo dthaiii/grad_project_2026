@@ -2,7 +2,10 @@
 __pycache__/
 *.py[codz]
 *$py.class
-
+# terraform files
+.terraform.tfstate
+.terraform.tfstate.backup
+.terraform.lock.hcl
 # C extensions
 *.so
 keys, my_keys.json
@@ -54,6 +57,7 @@ cover/
 # Translations
 *.mo
 *.pot
+# gcp
 
 # Django stuff:
 *.log

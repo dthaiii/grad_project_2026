@@ -3,7 +3,8 @@ schema = {
         {"name": "artist", "type": "STRING", "mode": "NULLABLE"},
         {"name": "song", "type": "STRING", "mode": "NULLABLE"},
         {"name": "duration", "type": "FLOAT64", "mode": "NULLABLE"},
-        {"name": "ts", "type": "TIMESTAMP", "mode": "NULLABLE"},
+        {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"},
+        {"name": "date", "type": "DATE", "mode": "NULLABLE"},
         {"name": "auth", "type": "STRING", "mode": "NULLABLE"},
         {"name": "level", "type": "STRING", "mode": "NULLABLE"},
         {"name": "city", "type": "STRING", "mode": "NULLABLE"},
@@ -18,7 +19,8 @@ schema = {
         {"name": "registration", "type": "INTEGER", "mode": "NULLABLE"}
     ],
     "page_view_events" : [
-        {"name": "ts", "type": "TIMESTAMP", "mode": "NULLABLE"},
+        {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"},
+        {"name": "date", "type": "DATE", "mode": "NULLABLE"},
         {"name": "page", "type": "STRING", "mode": "NULLABLE"},
         {"name": "auth", "type": "STRING", "mode": "NULLABLE"},
         {"name": "method", "type": "STRING", "mode": "NULLABLE"},
@@ -39,7 +41,8 @@ schema = {
         {"name": "duration", "type": "FLOAT64", "mode": "NULLABLE"}
     ],
     "auth_events" : [
-        {"name": "ts", "type": "TIMESTAMP", "mode": "NULLABLE"},
+        {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"},
+        {"name": "date", "type": "DATE", "mode": "NULLABLE"},
         {"name": "level", "type": "STRING", "mode": "NULLABLE"},
         {"name": "city", "type": "STRING", "mode": "NULLABLE"},
         {"name": "state", "type": "STRING", "mode": "NULLABLE"},

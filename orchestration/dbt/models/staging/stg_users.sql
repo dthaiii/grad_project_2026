@@ -21,7 +21,7 @@ SELECT
         dbt_date.from_unixtimestamp("registration", format="milliseconds") 
     }} AS registration_datetime
 FROM
-    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'users_ext') }}
+    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'users') }}
 {% if is_incremental() %}
 
     WHERE date >= "{{ max_ingestion_datetime }}"

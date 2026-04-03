@@ -26,7 +26,7 @@ SELECT
     artist,
     ROUND(duration, 2) as duration
 FROM
-    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'listen_events_ext') }}
+    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'listen_events') }}
 {% if is_incremental() %}
 
     WHERE date >= "{{ max_ingestion_datetime }}"

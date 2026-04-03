@@ -22,6 +22,7 @@ models:
         data_type: string
         description: Foreign key referencing the user dimension for this listen event.
         tests:
+          - not_null
           - relationships:
               field: pk_user
               to: ref('dim_users')
@@ -30,6 +31,7 @@ models:
         data_type: string
         description: Foreign key referencing the song dimension for this listen event.
         tests:
+          - not_null
           - relationships:
               field: pk_song
               to: ref('dim_songs')

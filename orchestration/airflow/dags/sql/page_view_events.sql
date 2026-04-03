@@ -1,6 +1,7 @@
 INSERT {{ BIGQUERY_DATASET }}.{{ PAGE_VIEW_EVENTS_TABLE }}
 SELECT
     ts,
+    PARSE_DATE('%m%d%H', '{{ EXECUTION_DATETIME_STR }}') AS date,
     COALESCE(page, 'NA') AS page,
     COALESCE(auth, 'NA') AS auth,
     COALESCE(method, 'NA') AS method,

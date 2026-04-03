@@ -1,11 +1,19 @@
 {{ config(
-    materialized='table',
+    materialized='incremental',
+    unique_key = 'session_id',
     partition_by={
       "field": "session_start_datetime",
       "data_type": "timestamp",
       "granularity": "day"
-    }
+    },
+    cluster_by = ["pk_user", "pk_location", "pk_entry_page"]
 ) }}
+
+{% if is_incremental() %}
+    {%- set max_session_start_datetime = get_value_from_query(
+        "COALESCE(MAX(session_start_datetime),'1900-01-01') - INTERVAL 1 HOUR", this
+        ) -%}
+{% endif %}
 
 WITH session_facts_no_first_page AS (
     SELECT
@@ -24,6 +32,11 @@ WITH session_facts_no_first_page AS (
         SUM(ad_revenue) AS total_ad_revenue
     FROM
         {{ ref('stg_page_view_events') }}
+    
+    {% if is_incremental() %}
+    WHERE event_datetime > "{{ max_session_start_datetime }}"
+    {% endif %}
+
     GROUP BY
         1, 2, 3, 4, 5, 6
 ),

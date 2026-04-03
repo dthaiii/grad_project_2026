@@ -5,7 +5,8 @@
       "field": "event_datetime",
       "data_type": "timestamp",
       "granularity": "day"
-    }
+    },
+    cluster_by = ["pk_user", "pk_song", "pk_location"]
 ) }}
 
 {% if is_incremental() %}

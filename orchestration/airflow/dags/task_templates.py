@@ -65,8 +65,8 @@ def create_empty_table(event,
         table_id = bigquery_table_name,
         schema_fields = events_schema,
         time_partitioning = {
-            'type': 'HOUR',
-            'field': 'ts'
+            'type': 'DAY',
+            'field': 'date'
             },
         exists_ok = True
     )

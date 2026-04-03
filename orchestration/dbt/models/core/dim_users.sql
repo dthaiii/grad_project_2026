@@ -1,4 +1,7 @@
-{{ config(materialized='table') }}
+{{ config(
+    materialized='table',
+    cluster_by = ["user_id", "level"]
+) }}
 
 WITH final_change AS (
     SELECT

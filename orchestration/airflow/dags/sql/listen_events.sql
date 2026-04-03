@@ -4,6 +4,7 @@ SELECT
     COALESCE(song, 'NA') AS song,
     COALESCE(duration, -1) AS duration,
     ts,
+    PARSE_DATE('%m%d%H', '{{ EXECUTION_DATETIME_STR }}') AS date,
     COALESCE(auth, 'NA') AS auth,
     COALESCE(level, 'NA') AS level,
     COALESCE(city, 'NA') AS city,

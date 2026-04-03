@@ -15,7 +15,7 @@ SELECT
     userid AS user_id,
     LOWER(level) AS prev_level
 FROM
-    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'status_change_events_ext') }}
+    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'status_change_events') }}
 {% if is_incremental() %}
 
     WHERE date >= "{{ max_ingestion_datetime }}"

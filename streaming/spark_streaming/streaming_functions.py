@@ -132,6 +132,7 @@ def create_file_write_stream(stream, storage_path, checkpoint_path, trigger="60 
                     .partitionBy("month", "day", "hour")
                     .option("path", storage_path)
                     .option("checkpointLocation", checkpoint_path)
+                    .option("mergeSchema", "true")
                     .trigger(processingTime=trigger)
                     .outputMode(output_mode))
 

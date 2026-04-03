@@ -28,7 +28,7 @@ SELECT
     TRIM(useragent, '"') AS user_agent,
     ad_revenue
 FROM
-    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'page_view_events_ext') }}
+    {{ source(env_var('DBT_BIGQUERY_DATASET'), 'page_view_events') }}
 WHERE auth = "Logged In"
     {% if is_incremental() %}
     
