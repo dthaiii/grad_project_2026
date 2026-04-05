@@ -5,6 +5,8 @@
 
 import os
 import logging
+import uuid
+from datetime import datetime
 from streaming_functions import *
 from schema import schema
 
@@ -18,6 +20,20 @@ KAFKA_PORT = os.getenv("KAFKA_PORT", "9092")
 KAFKA_ADDRESS = os.getenv("KAFKA_ADDRESS", 'localhost')
 GCP_GCS_BUCKET = os.getenv("GCP_GCS_BUCKET", 'streamify')
 GCS_STORAGE_PATH = f'gs://{GCP_GCS_BUCKET}'
+
+# Generate unique consumer group ID to force consuming from EARLIEST
+UNIQUE_RUN_ID = os.getenv("SPARK_RUN_ID", f"spark-{datetime.now().strftime('%Y%m%d_%H%M%S')}-{uuid.uuid4().hex[:8]}")
+
+# Reset checkpoints if RESET_OFFSETS is set
+RESET_OFFSETS = os.getenv("SPARK_RESET_OFFSETS", "false").lower() == "true"
+if RESET_OFFSETS:
+    import subprocess
+    logging.info(f"Resetting checkpoint offsets...")
+    try:
+        subprocess.run(["gsutil", "rm", "-r", f"{GCS_STORAGE_PATH}/checkpoint/"], check=False)
+        logging.info("Checkpoint deleted successfully")
+    except Exception as e:
+        logging.warning(f"Could not delete checkpoint: {e}")
 
 # initialize a spark session
 spark = create_or_get_spark_session('Eventsim Stream')

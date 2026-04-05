@@ -12,7 +12,7 @@ schema = {
         StructField("song", StringType(), True),
         StructField("duration", DoubleType(), True),
         StructField("ts", LongType(), True),
-        StructField("sessionid", IntegerType(), True),
+        StructField("sessionId", IntegerType(), True),
         StructField("auth", StringType(), True),
         StructField("level", StringType(), True),
         StructField("itemInSession", IntegerType(), True),
@@ -69,5 +69,41 @@ schema = {
         StructField("gender", StringType(), True),
         StructField("registration", LongType(), True),
         StructField("success", BooleanType(), True)
+    ]),
+    'status_change_events': StructType([
+        StructField("ts", LongType(), True),
+        StructField("userId", LongType(), True),
+        StructField("level", StringType(), True),
+        StructField("city", StringType(), True),
+        StructField("zip", IntegerType(), True),
+        StructField("state", StringType(), True),
+        StructField("userAgent", StringType(), True),
+        StructField("lon", DoubleType(), True),
+        StructField("lat", DoubleType(), True),
+        StructField("lastName", StringType(), True),
+        StructField("firstName", StringType(), True),
+        StructField("gender", StringType(), True),
+        StructField("registration", LongType(), True)
+    ]),
+    'user_info': StructType([
+        StructField("ts", LongType(), True),
+        StructField("userId", LongType(), True),
+        StructField("firstName", StringType(), True),
+        StructField("lastName", StringType(), True),
+        StructField("gender", StringType(), True),
+        StructField("level", StringType(), True),
+        StructField("registration", LongType(), True)
+    ]),
+    'session_start_end_events': StructType([
+        StructField("ts", LongType(), True),
+        StructField("sessionId", IntegerType(), True),
+        StructField("userId", LongType(), True),
+        StructField("action", StringType(), True),
+        StructField("city", StringType(), True),
+        StructField("zip", IntegerType(), True),
+        StructField("state", StringType(), True),
+        StructField("userAgent", StringType(), True),
+        StructField("lon", DoubleType(), True),
+        StructField("lat", DoubleType(), True)
     ])
 }
