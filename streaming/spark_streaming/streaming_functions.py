@@ -59,6 +59,8 @@ def create_kafka_read_stream(spark, kafka_address, kafka_port, topic, starting_o
                    .option("failOnDataLoss", False)
                    .option("startingOffsets", starting_offset)
                    .option("subscribe", topic)
+                   .option("kafka.consumer.max.poll.interval.ms", 300000)
+                   .option("kafka.session.timeout.ms", 30000)
                    .load())
 
     return read_stream

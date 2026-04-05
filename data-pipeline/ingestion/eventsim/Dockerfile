@@ -15,10 +15,16 @@ RUN set -ex; \
 
 WORKDIR /opt/eventsim
 
-COPY eventsim.sh /opt/eventsim/eventsim.sh
-COPY examples /opt/eventsim/examples
+# COPY eventsim_startup.sh /opt/eventsim/eventsim_startup.sh
+# COPY examples /opt/eventsim/examples
+# COPY data /opt/eventsim/data
+# COPY target/eventsim-assembly-2.0.jar /opt/eventsim/eventsim-assembly-2.0.jar
+
+COPY scripts/eventsim.sh /opt/eventsim/eventsim.sh
+COPY configs/eventsim /opt/eventsim/examples
+COPY bin/eventsim-assembly-2.0.jar /opt/eventsim/eventsim-assembly-2.0.jar
+
 COPY data /opt/eventsim/data
-COPY target/eventsim-assembly-2.0.jar /opt/eventsim/eventsim-assembly-2.0.jar
 
 RUN chmod +x /opt/eventsim/eventsim.sh
 ENTRYPOINT ["/opt/eventsim/eventsim.sh"]

@@ -1,9 +1,15 @@
 services:
   ingest:
-    build: 
-      context: .
-      dockerfile: ./Dockerfile
+    build: .
+    env_file:
+      - .env
     command:
-      - ${GCS_BUCKET_NAME}
+      - ${GCP_GCS_BUCKET}
     environment:
       - PYTHONUNBUFFERED=1
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/google_credentials.json
+    # XÓA HOÀN TOÀN PHẦN volumes TẠI ĐÂY
+    volumes:
+      # Gắn file thực tế vào đúng đường dẫn /app/... bên trong container
+      - /home/duythai/grad_project_2026/keys/google_credentials.json:/app/google_credentials.json
+      - /home/duythai/grad_project_2026/data-pipeline/ingestion/eventsim/data:/app/data
