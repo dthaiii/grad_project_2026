@@ -64,10 +64,6 @@ def create_empty_table(event,
         dataset_id = bigquery_dataset,
         table_id = bigquery_table_name,
         schema_fields = events_schema,
-        time_partitioning = {
-            'type': 'DAY',
-            'field': 'date'
-            },
         exists_ok = True
     )
 

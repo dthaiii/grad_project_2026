@@ -1,13 +1,15 @@
 INSERT {{ BIGQUERY_DATASET }}.{{ PAGE_VIEW_EVENTS_TABLE }}
 SELECT
     ts,
-    PARSE_DATE('%m%d%H', '{{ EXECUTION_DATETIME_STR }}') AS date,
+    sessionId,
     COALESCE(page, 'NA') AS page,
     COALESCE(auth, 'NA') AS auth,
     COALESCE(method, 'NA') AS method,
     COALESCE(status, 0) AS status,
     COALESCE(level, 'NA') AS level,
+    itemInSession,
     COALESCE(city, 'NA') AS city,
+    COALESCE(zip, 0) AS zip,
     COALESCE(state, 'NA') AS state,
     COALESCE(userAgent, 'NA') AS userAgent,
     COALESCE(lon, 0.0) AS lon,
@@ -16,9 +18,8 @@ SELECT
     COALESCE(lastName, 'NA') AS lastName,
     COALESCE(firstName, 'NA') AS firstName,
     COALESCE(gender, 'NA') AS gender,
-    COALESCE(registration, 9999999999999) AS registration,
+    COALESCE(registration, 0) AS registration,
     COALESCE(artist, 'NA') AS artist,
     COALESCE(song, 'NA') AS song,
-    COALESCE(duration, -1) AS duration
-FROM {{ BIGQUERY_DATASET }}.{{ PAGE_VIEW_EVENTS_TABLE}}_{{ logical_date.strftime("%m%d%H") }} -- Creates a table name with month day and hour values appended to it
-                                                                                            -- like page_view_events_032313 for 23-03-2022 13:00:00
+    COALESCE(duration, -1.0) AS duration
+FROM {{ BIGQUERY_DATASET }}.{{ PAGE_VIEW_EVENTS_TABLE}}_{{ logical_date.strftime("%m%d%H") }}

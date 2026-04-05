@@ -11,12 +11,17 @@ from task_templates import (create_external_table,
                             delete_external_table)
 
 
-EVENTS = ['listen_events', 'page_view_events', 'auth_events'] # we have data coming in from three events
+EVENTS = ['auth_events', 
+          'listen_events', 
+          'page_view_events', 
+          'session_start_end_events', 
+          'status_change_events', 
+          'user_info'] # we have data coming in from six events
 
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID')
 GCP_GCS_BUCKET = os.environ.get('GCP_GCS_BUCKET')
-BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET', 'streamify_stg')
+BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET', 'eventsim_stgging')
 
 EXECUTION_MONTH = '{{ logical_date.strftime("%-m") }}'
 EXECUTION_DAY = '{{ logical_date.strftime("%-d") }}'
@@ -90,9 +95,6 @@ with DAG(
                                                            external_table_name)
                     
         
-        create_external_table_task >> \
-        create_empty_table_task >> \
-        execute_insert_query_task >> \
-        delete_external_table_task >> \
-        initate_dbt_task >> \
-        execute_dbt_task
+        create_external_table_task >> create_empty_table_task >> execute_insert_query_task >> delete_external_table_task >> initate_dbt_task
+    
+    initate_dbt_task >> execute_dbt_task
