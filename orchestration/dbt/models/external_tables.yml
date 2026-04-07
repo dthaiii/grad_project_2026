@@ -82,3 +82,7 @@ sources:
       - name: status_change_events
         description: "Table of status change events, loaded via Airflow into BigQuery"
         
+      - name: user_info
+        description: "Table of user info, loaded via Airflow into BigQuery"
+      - name: session_start_end_events
+        description: "Table of session start end events, loaded via Airflow into BigQuery"

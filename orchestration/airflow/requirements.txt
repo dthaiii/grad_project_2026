@@ -3,4 +3,5 @@ pyarrow
 pandas
 sqlalchemy
 psycopg2-binary
-dbt-bigquery>=1.0.0
+dbt-bigquery
+astronomer-cosmos

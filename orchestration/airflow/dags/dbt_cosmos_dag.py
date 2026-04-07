@@ -4,17 +4,17 @@ from pathlib import Path
 
 from airflow import DAG
 from cosmos import DbtDag, ProjectConfig, ProfileConfig, ExecutionConfig
-from cosmos.profiles import BigQueryServiceAccountProfileMapping
+from cosmos.profiles import GoogleCloudServiceAccountDictProfileMapping
 
 # Path to your dbt project
 DBT_PROJECT_PATH = Path("/dbt")
-DBT_EXECUTABLE_PATH = Path("/usr/local/bin/dbt")
+DBT_EXECUTABLE_PATH = Path("/home/airflow/.local/bin/dbt")
 
 # Define the BigQuery profile using service account
 profile_config = ProfileConfig(
     profile_name="default",
     target_name="prod",
-    profile_mapping=BigQueryServiceAccountProfileMapping(
+    profile_mapping=GoogleCloudServiceAccountDictProfileMapping(
         conn_id="google_cloud_default",
         profile_args={
             "project": os.environ.get("GCP_PROJECT_ID"),
