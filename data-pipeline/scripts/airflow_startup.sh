@@ -7,6 +7,14 @@ PROJECT_ROOT="$(dirname "$(dirname "$SCRIPT_DIR")")"
 echo "Changing permissions for dbt folder..."
 cd "$PROJECT_ROOT/orchestration/dbt" && sudo chmod -R 777 .
 
+echo "Setting environment variables for Airflow..."
+cat <<EOF > "$PROJECT_ROOT/orchestration/airflow/.env"
+AIRFLOW_UID=$(id -u)
+GCP_PROJECT_ID=${GCP_PROJECT_ID:-grad-service-music-pipeline}
+GCP_GCS_BUCKET=${GCP_GCS_BUCKET:-music-streaming-data-lake}
+BIGQUERY_DATASET=${BIGQUERY_DATASET:-eventsim-stgging}
+EOF
+
 echo "Building airflow docker images..."
 cd "$PROJECT_ROOT/orchestration/airflow"
 docker-compose build
