@@ -9,7 +9,7 @@ WITH daily_listens AS (
         song,
         artist,
         COUNT(*) AS play_count,
-        COUNT(DISTINCT userId) AS unique_listeners
+        COUNT(DISTINCT user_id) AS unique_listeners
     FROM {{ ref('stg_listen_events') }}
     GROUP BY 1, 2, 3
 )
@@ -23,4 +23,3 @@ SELECT
     DENSE_RANK() OVER (PARTITION BY activity_date ORDER BY play_count DESC) AS rank
 FROM daily_listens
 WHERE song != 'NA'
-ORDER BY activity_date DESC, rank ASC

@@ -9,7 +9,9 @@ __pycache__/
 # C extensions
 *.so
 
-keys, google_credentials.json
+# gcp credentials
+google/
+google/google_credentials.json
 # Distribution / packaging
 .Python
 build/
@@ -215,3 +217,4 @@ __marimo__/
 keys/google_credentials.json
 data-pipeline/ingestion/locations-and-songs/google_credentials.json
 *.json.secret
+google/google_credentials.json

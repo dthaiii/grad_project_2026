@@ -3,6 +3,9 @@ from datetime import datetime
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
+from airflow.operators.python import ShortCircuitOperator
+from airflow.providers.google.cloud.hooks.gcs import GCSHook
+from airflow.utils.trigger_rule import TriggerRule
 
 from schema import schema
 from task_templates import (create_external_table, 
@@ -41,8 +44,14 @@ default_args = {
     'owner' : 'airflow'
 }
 
+
+def has_event_files(bucket_name, events_data_path, **kwargs):
+    hook = GCSHook(gcp_conn_id='google_cloud_default')
+    objects = hook.list(bucket_name=bucket_name, prefix=events_data_path)
+    return bool(objects)
+
 with DAG(
-    dag_id = f'streamify_dag',
+    dag_id = f'load_event_dag',
     default_args = default_args,
     description = f'Hourly data pipeline to generate dims and facts for streamify',
     schedule_interval="5 * * * *", #At the 5th minute of every hour
@@ -55,12 +64,13 @@ with DAG(
     
     initate_dbt_task = BashOperator(
         task_id = 'dbt_initiate',
-        bash_command = 'cd /dbt && dbt deps && dbt seed --select state_codes --profiles-dir . --target prod'
+        bash_command = 'cd /dbt && dbt deps && dbt seed --select state_codes --profiles-dir . --target prod',
+        trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
     )
 
     execute_dbt_task = BashOperator(
         task_id = 'dbt_streamify_run',
-        bash_command = 'cd /dbt && dbt deps && dbt run --profiles-dir . --target prod'
+        bash_command = 'cd /dbt && dbt deps && dbt run --profiles-dir . --target prod --exclude dim_songs+ dim_locations+'
     )
 
     for event in EVENTS:
@@ -70,6 +80,15 @@ with DAG(
         external_table_name = f'{staging_table_name}_{EXECUTION_DATETIME_STR}'
         events_data_path = f'{staging_table_name}/month={EXECUTION_MONTH}/day={EXECUTION_DAY}/hour={EXECUTION_HOUR}'
         events_schema = schema[event]
+
+        check_event_data_task = ShortCircuitOperator(
+            task_id=f'{event}_check_event_data',
+            python_callable=has_event_files,
+            op_kwargs={
+                'bucket_name': GCP_GCS_BUCKET,
+                'events_data_path': events_data_path,
+            },
+        )
 
         create_external_table_task = create_external_table(event,
                                                            GCP_PROJECT_ID, 
@@ -95,6 +114,6 @@ with DAG(
                                                            external_table_name)
                     
         
-        create_external_table_task >> create_empty_table_task >> execute_insert_query_task >> delete_external_table_task >> initate_dbt_task
+        check_event_data_task >> create_external_table_task >> create_empty_table_task >> execute_insert_query_task >> delete_external_table_task >> initate_dbt_task
     
     initate_dbt_task >> execute_dbt_task

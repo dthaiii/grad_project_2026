@@ -1,22 +1,26 @@
 INSERT {{ BIGQUERY_DATASET }}.{{ LISTEN_EVENTS_TABLE }}
 SELECT
-    COALESCE(artist, 'NA') AS artist,
-    COALESCE(song, 'NA') AS song,
-    COALESCE(duration, -1.0) AS duration,
-    ts,
-    sessionId,
-    COALESCE(auth, 'NA') AS auth,
-    COALESCE(level, 'NA') AS level,
-    itemInSession,
-    COALESCE(city, 'NA') AS city,
-    COALESCE(zip, 0) AS zip,
-    COALESCE(state, 'NA') AS state,
-    COALESCE(userAgent, 'NA') AS userAgent,
-    COALESCE(lon, 0.0) AS lon,
-    COALESCE(lat, 0.0) AS lat,
-    COALESCE(userId, 0) AS userId,
-    COALESCE(lastName, 'NA') AS lastName,
-    COALESCE(firstName, 'NA') AS firstName,
-    COALESCE(gender, 'NA') AS gender,
-    COALESCE(registration, 0) AS registration
-FROM {{ BIGQUERY_DATASET }}.{{ LISTEN_EVENTS_TABLE}}_{{ logical_date.strftime("%m%d%H") }}
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.artist'), 'NA') AS artist,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.song'), 'NA') AS song,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.duration') AS FLOAT64), -1.0) AS duration,
+    COALESCE(
+        SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.ts') AS INT64),
+        UNIX_MILLIS(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.ts') AS TIMESTAMP)),
+        0
+    ) AS ts,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.sessionId') AS INT64), 0) AS sessionId,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.auth'), 'NA') AS auth,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.level'), 'NA') AS level,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.itemInSession') AS INT64), 0) AS itemInSession,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.city'), 'NA') AS city,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.zip') AS INT64), 0) AS zip,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.state'), 'NA') AS state,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.userAgent'), 'NA') AS userAgent,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.lon') AS FLOAT64), 0.0) AS lon,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.lat') AS FLOAT64), 0.0) AS lat,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.userId') AS INT64), 0) AS userId,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.lastName'), 'NA') AS lastName,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.firstName'), 'NA') AS firstName,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.gender'), 'NA') AS gender,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.registration') AS INT64), 0) AS registration
+FROM {{ BIGQUERY_DATASET }}.{{ LISTEN_EVENTS_TABLE}}_{{ logical_date.strftime("%m%d%H") }} AS src

@@ -1,11 +1,11 @@
 {{ config(
     materialized='table',
-    cluster_by = ["userId", "date"]
+    cluster_by = ["user_id", "activity_date"]
 ) }}
 
 WITH user_activity AS (
     SELECT
-        userId,
+        user_id,
         DATE(event_datetime) AS activity_date,
         COUNT(song) AS total_songs_listened,
         SUM(duration) AS total_listening_time_seconds,
@@ -36,5 +36,4 @@ SELECT
     ROUND(a.total_listening_time_seconds / 60, 2) AS total_listening_minutes,
     a.unique_artists_listened
 FROM user_demographics u
-JOIN user_activity a ON u.user_id = a.userId
-ORDER BY a.activity_date DESC, a.total_songs_listened DESC
+JOIN user_activity a ON u.user_id = a.user_id
