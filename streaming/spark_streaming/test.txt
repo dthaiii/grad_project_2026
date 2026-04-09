@@ -1,0 +1,38 @@
+export PYSPARK_PYTHON=/home/duythai/anaconda/bin/python
+export PYSPARK_DRIVER_PYTHON=/home/duythai/anaconda/bin/python
+
+/home/duythai/spark/spark-3.0.3-bin-hadoop3.2/bin/spark-submit \
+  --master spark://eventsim-multinode-spark-cluster-m:7077 \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 \
+  stream_all_events.py
+
+  cd ~/grad_project_2026/streaming/spark_streaming
+
+# Khai báo môi trường mới
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export PYSPARK_DRIVER_PYTHON=/home/duythai/anaconda/envs/pyspark_env/bin/python
+export PYSPARK_PYTHON=./environment/bin/python
+
+# Submit lại với file môi trường mỏng nhẹ hơn
+/usr/lib/spark/bin/spark-submit \
+  --master yarn \
+  --deploy-mode client \
+  --archives pyspark_env.tar.gz#environment \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 \
+  stream_all_events.py
+
+
+  //////////////////////////////////
+  cd /home/duythai/grad_project_2026/streaming/spark_streaming
+export HADOOP_CONF_DIR=/etc/hadoop/conf
+export PYSPARK_DRIVER_PYTHON=/home/duythai/anaconda/envs/pyspark_env/bin/python
+export PYSPARK_PYTHON=./environment/bin/python
+export SPARK_RESET_OFFSETS=false
+export SPARK_MAX_OFFSETS_PER_TRIGGER=200000
+export SPARK_TRIGGER_INTERVAL='30 seconds'
+/usr/lib/spark/bin/spark-submit \
+  --master yarn \
+  --deploy-mode client \
+  --archives pyspark_env.tar.gz#environment \
+  --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 \
+  stream_all_events.py

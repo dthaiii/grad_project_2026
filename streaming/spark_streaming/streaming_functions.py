@@ -35,7 +35,7 @@ def create_or_get_spark_session(app_name, master="yarn"):
     return spark
 
 
-def create_kafka_read_stream(spark, kafka_address, kafka_port, topic, starting_offset="earliest"):
+def create_kafka_read_stream(spark, kafka_address, kafka_port, topic, starting_offset="earliest", max_offsets_per_trigger=50000):
     """
     Creates a kafka read stream
 
@@ -48,6 +48,8 @@ def create_kafka_read_stream(spark, kafka_address, kafka_port, topic, starting_o
             Name of the kafka topic
         starting_offset: str
             Starting offset configuration, "earliest" by default 
+        max_offsets_per_trigger: int
+            Maximum records read from Kafka in one micro-batch
     Returns:
         read_stream: DataStreamReader
     """
@@ -59,6 +61,7 @@ def create_kafka_read_stream(spark, kafka_address, kafka_port, topic, starting_o
                    .option("failOnDataLoss", False)
                    .option("startingOffsets", starting_offset)
                    .option("subscribe", topic)
+                   .option("maxOffsetsPerTrigger", int(max_offsets_per_trigger))
                    .option("kafka.consumer.max.poll.interval.ms", 300000)
                    .option("kafka.session.timeout.ms", 30000)
                    .load())
