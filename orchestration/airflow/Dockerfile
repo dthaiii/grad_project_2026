@@ -1,21 +1,18 @@
 # First-time build can take upto 10 mins.
 
-FROM apache/airflow:2.2.3
+FROM apache/airflow:2.7.3-python3.9
 
 ENV AIRFLOW_HOME=/opt/airflow
 
 USER root
 RUN apt-get update && \
     ACCEPT_EULA=Y apt-get upgrade -y && \
-    apt-get install -y git
-RUN pip install --upgrade pip
+    apt-get install -y git libpq-dev gcc && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # git gcc g++ -qqq
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Ref: https://airflow.apache.org/docs/docker-stack/recipes.html
-
+USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
 ARG CLOUD_SDK_VERSION=322.0.0
@@ -35,6 +32,11 @@ RUN DOWNLOAD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/goo
        --quiet \
     && rm -rf "${TMP_DIR}" \
     && gcloud --version
+
+USER airflow
+RUN pip install --upgrade pip
+COPY requirements.txt .
+RUN pip install --no-cache-dir "apache-airflow==2.7.3" -r requirements.txt --constraint "https://raw.githubusercontent.com/apache/airflow/constraints-2.7.3/constraints-3.9.txt"
 
 WORKDIR $AIRFLOW_HOME
 

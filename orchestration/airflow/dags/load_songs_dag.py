@@ -68,7 +68,7 @@ with DAG(
     start_date=datetime(2026,3,8),
     end_date=datetime(2026,4,8),
     catchup=True,
-    tags=['streamify']
+    tags=['eventsim']
 ) as dag:
 
     download_songs_file_task = BashOperator(

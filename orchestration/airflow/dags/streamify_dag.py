@@ -50,7 +50,7 @@ with DAG(
     catchup=False,
     max_active_runs=1,
     user_defined_macros=MACRO_VARS,
-    tags=['streamify']
+    tags=['eventsim']
 ) as dag:
     
     initate_dbt_task = BashOperator(
