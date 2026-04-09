@@ -1,0 +1,77 @@
+version: 2
+
+models:
+  - name: mart_fact_user_daily_activity
+    description: >
+      Fact-like mart at grain user_id + activity_date, built only from mart layer
+      models to support user behavior analytics.
+    tests:
+      - unique:
+          column_name: user_activity_fact_key
+          severity: error
+    columns:
+      - name: user_activity_fact_key
+        tests:
+          - not_null
+
+      - name: user_id
+        tests:
+          - not_null
+
+      - name: activity_date
+        tests:
+          - not_null
+
+      - name: total_sessions
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              severity: warn
+
+      - name: total_songs_listened
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              severity: warn
+
+  - name: mart_fact_song_daily_performance
+    description: >
+      Fact-like mart at grain activity_date + song + artist, built from daily
+      trending mart for content performance analysis.
+    tests:
+      - unique:
+          column_name: song_daily_fact_key
+          severity: error
+    columns:
+      - name: song_daily_fact_key
+        tests:
+          - not_null
+
+      - name: activity_date
+        tests:
+          - not_null
+
+      - name: song
+        tests:
+          - not_null
+
+      - name: artist
+        tests:
+          - not_null
+
+      - name: play_count
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              inclusive: true
+              severity: warn
+
+      - name: play_share_pct
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1
+              inclusive: true
+              severity: warn

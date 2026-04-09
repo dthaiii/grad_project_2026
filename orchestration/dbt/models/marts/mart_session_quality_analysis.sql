@@ -1,12 +1,12 @@
 {{ config(
     materialized='table',
-    cluster_by = ["userId", "session_start_datetime"]
+    cluster_by = ["user_id", "session_start_datetime"]
 ) }}
 
 WITH session_events AS (
     SELECT
-        userId,
-        sessionId,
+        user_id,
+        session_id,
         MIN(event_datetime) AS session_start_datetime,
         MAX(event_datetime) AS session_end_datetime,
         TIMESTAMP_DIFF(MAX(event_datetime), MIN(event_datetime), MINUTE) AS session_duration_minutes,
@@ -27,4 +27,3 @@ SELECT
         ELSE 'Passive'
     END AS user_engagement_level
 FROM session_events
-ORDER BY session_start_datetime DESC

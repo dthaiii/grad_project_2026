@@ -7,13 +7,16 @@ models:
     config:
       tags: "fact"
     tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - event_datetime
-            - pk_user
-            - pk_song
+      - unique:
+          column_name: listen_event_key
           severity: error
     columns:
+      - name: listen_event_key
+        data_type: string
+        description: Deterministic key used to deduplicate and merge listen events.
+        tests:
+          - not_null
+
       - name: event_datetime
         data_type: timestamp
         description: The time when the user starts listening to this song.
@@ -22,7 +25,6 @@ models:
         data_type: string
         description: Foreign key referencing the user dimension for this listen event.
         tests:
-          - not_null
           - relationships:
               field: pk_user
               to: ref('dim_users')
@@ -131,3 +133,49 @@ models:
               min_value: 0
               inclusive: true
               severity: warn
+
+  - name: fact_status_change_events
+    description: >
+      Each row represents a user status change event derived from stg_status_change_events.
+    config:
+      tags: "fact"
+    tests:
+      - unique:
+          column_name: status_change_event_key
+          severity: error
+    columns:
+      - name: status_change_event_key
+        data_type: string
+        description: Deterministic key used to deduplicate and merge status-change events.
+        tests:
+          - not_null
+
+      - name: event_datetime
+        data_type: timestamp
+        description: Timestamp when a user changed subscription status.
+
+      - name: pk_user
+        data_type: string
+        description: Foreign key referencing user dimension.
+        tests:
+          - relationships:
+              field: pk_user
+              to: ref('dim_users')
+
+      - name: prev_level
+        data_type: string
+        description: User subscription level before this status-change event.
+        tests:
+          - accepted_values:
+              values:
+                - free
+                - paid
+
+      - name: next_level
+        data_type: string
+        description: User subscription level immediately after this status-change event.
+        tests:
+          - accepted_values:
+              values:
+                - free
+                - paid

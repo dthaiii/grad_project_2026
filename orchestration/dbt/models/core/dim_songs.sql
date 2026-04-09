@@ -7,7 +7,7 @@ WITH distinct_songs AS (
         ROUND(duration, 2) AS duration,
         genre
     FROM
-        {{ source(env_var('DBT_BIGQUERY_DATASET'), 'songs_ext') }}
+        {{ source(env_var('DBT_SOURCE_DATASET'), 'songs_ext') }}
 )
 
 SELECT

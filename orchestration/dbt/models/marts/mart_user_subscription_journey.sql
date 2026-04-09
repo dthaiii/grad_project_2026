@@ -1,11 +1,11 @@
 {{ config(
     materialized='table',
-    cluster_by = ["userId", "registration_datetime"]
+    cluster_by = ["user_id", "registration_datetime"]
 ) }}
 
 WITH user_registration AS (
     SELECT
-        user_id AS userId,
+        user_id,
         MIN(registration_datetime) AS registration_datetime,
         MIN(first_name) AS first_name,
         MIN(last_name) AS last_name
@@ -15,15 +15,15 @@ WITH user_registration AS (
 
 upgrade_events AS (
     SELECT
-        userId,
+        user_id,
         MIN(event_datetime) AS subscription_upgrade_datetime
     FROM {{ ref('stg_status_change_events') }}
-    WHERE LOWER(level) = 'paid'
+    WHERE LOWER(prev_level) = 'free'
     GROUP BY 1
 )
 
 SELECT
-    reg.userId,
+    reg.user_id,
     reg.first_name,
     reg.last_name,
     reg.registration_datetime,
@@ -36,5 +36,4 @@ SELECT
         ELSE 'Long-term Conversion (> 1 Month)'
     END AS user_subscription_segment
 FROM user_registration reg
-LEFT JOIN upgrade_events upg ON reg.userId = upg.userId
-ORDER BY days_to_upgrade ASC NULLS LAST
+LEFT JOIN upgrade_events upg ON reg.user_id = upg.user_id

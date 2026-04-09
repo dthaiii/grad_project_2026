@@ -1,7 +1,7 @@
 default: 
-  target: sqlfluff
+  target: prod
   outputs:
-    sqlfluff:
+    prod:
       type: bigquery
       method: service-account
       keyfile: "{{ env_var('DBT_GOOGLE_BIGQUERY_KEYFILE') }}"

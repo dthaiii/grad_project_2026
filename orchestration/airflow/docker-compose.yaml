@@ -50,7 +50,18 @@ x-airflow-common:
     dockerfile: ./Dockerfile
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    # Concurrency caps for 2 vCPU / 8 GB VM to prevent OOM and task storms.
+    AIRFLOW__CORE__PARALLELISM: 4
+    AIRFLOW__CORE__DAG_CONCURRENCY: 2
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 2
+    AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 120
+    AIRFLOW__SCHEDULER__PARSING_PROCESSES: 1
+    AIRFLOW__SCHEDULER__MAX_THREADS: 1
+    AIRFLOW__SCHEDULER__DAG_FILE_PROCESSOR_TIMEOUT: 180
+    AIRFLOW__CELERY__WORKER_CONCURRENCY: 1
+    AIRFLOW__CELERY__WORKER_PREFETCH_MULTIPLIER: 1
+    AIRFLOW__WEBSERVER__WORKERS: 1
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
@@ -60,12 +71,14 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
     #_PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- dbt-bigquery==1.0.0 astronomer-cosmos}
     GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
+    DBT_GOOGLE_BIGQUERY_KEYFILE: /.google/credentials/google_credentials.json
     AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=/.google/credentials/google_credentials.json'
     GCP_PROJECT_ID: '${GCP_PROJECT_ID}'
     GCP_GCS_BUCKET: '${GCP_GCS_BUCKET}'
     BIGQUERY_DATASET: '${BIGQUERY_DATASET}'
     DBT_GCP_PROJECT: '${GCP_PROJECT_ID}'
-    DBT_BIGQUERY_DATASET: '${BIGQUERY_DATASET}'
+    DBT_SOURCE_DATASET: '${DBT_SOURCE_DATASET}'
+    DBT_BIGQUERY_DATASET: '${DBT_BIGQUERY_DATASET}'
     DBT_GCS_BUCKET_NAME: '${GCP_GCS_BUCKET}'
   
   volumes:
@@ -78,8 +91,6 @@ x-airflow-common:
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
-    redis:
-      condition: service_healthy
     postgres:
       condition: service_healthy
 
@@ -99,6 +110,8 @@ services:
     restart: always
 
   redis:
+    profiles:
+      - celery
     image: redis:latest
     expose:
       - 6379
@@ -140,6 +153,8 @@ services:
         condition: service_completed_successfully
 
   airflow-worker:
+    profiles:
+      - celery
     <<: *airflow-common
     command: celery worker
     healthcheck:
@@ -266,6 +281,8 @@ services:
 
   flower:
     <<: *airflow-common
+    profiles:
+      - monitoring
     command: celery flower
     ports:
       - 5555:5555

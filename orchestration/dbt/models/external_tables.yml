@@ -1,7 +1,7 @@
 version: 2
 
 sources:
-  - name: "{{ env_var('DBT_BIGQUERY_DATASET') }}"
+  - name: "{{ env_var('DBT_SOURCE_DATASET') }}"
     database: "{{ env_var('DBT_GCP_PROJECT') }}"
     loader: GCS
     tags: ["ext_sources"]

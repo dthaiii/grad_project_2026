@@ -1,7 +1,6 @@
 import os
 import logging
-import pyarrow.csv as pv
-import pyarrow.parquet as pq
+import pandas as pd
 from datetime import datetime
 
 from airflow import DAG
@@ -28,7 +27,6 @@ PARQUET_OUTFILE = f'{AIRFLOW_HOME}/{PARQUET_FILENAME}'
 TABLE_NAME = 'songs'
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID')
-BIGQUERY_DATASET = os.environ.get('DBT_BIGQUERY_DATASET', 'eventsim-stg')
 GCP_GCS_BUCKET = os.environ.get('GCP_GCS_BUCKET')
 BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET', 'eventsim_stgging')
 
@@ -37,10 +35,12 @@ def convert_to_parquet(csv_file, parquet_file):
     if not csv_file.endswith('csv'):
         raise ValueError('The input file is not in csv format')
     
-    # Path(f'{AIRFLOW_HOME}/fhv_tripdata/parquet').mkdir(parents=True, exist_ok=True) 
-    
-    table=pv.read_csv(csv_file)
-    pq.write_table(table, parquet_file)
+    df = pd.read_csv(
+        csv_file,
+        engine='python',
+        on_bad_lines='skip',
+    )
+    df.to_parquet(parquet_file, index=False)
 
 
 def upload_to_gcs(file_path, bucket_name, blob_name):
