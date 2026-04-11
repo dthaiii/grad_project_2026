@@ -25,5 +25,6 @@ SELECT
     COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.registration') AS INT64), 0) AS registration,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.artist'), 'NA') AS artist,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.song'), 'NA') AS song,
-    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.duration') AS FLOAT64), -1.0) AS duration
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.duration') AS FLOAT64), -1.0) AS duration,
+    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.ad_revenue') AS FLOAT64), 0.0) AS ad_revenue
 FROM {{ BIGQUERY_DATASET }}.{{ PAGE_VIEW_EVENTS_TABLE}}_{{ logical_date.strftime("%m%d%H") }} AS src

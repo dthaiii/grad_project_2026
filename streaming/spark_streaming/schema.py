@@ -50,7 +50,8 @@ schema = {
         StructField("registration", LongType(), True),
         StructField("artist", StringType(), True),
         StructField("song", StringType(), True),
-        StructField("duration", DoubleType(), True)
+        StructField("duration", DoubleType(), True),
+        StructField("ad_revenue", DoubleType(), True)
     ]),
     'auth_events': StructType([
         StructField("ts", LongType(), True),

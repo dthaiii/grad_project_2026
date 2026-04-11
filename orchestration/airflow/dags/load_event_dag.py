@@ -51,26 +51,27 @@ def has_event_files(bucket_name, events_data_path, **kwargs):
     return bool(objects)
 
 with DAG(
-    dag_id = f'load_event_dag',
+    dag_id = f'load_event_dag_v1',
     default_args = default_args,
     description = f'Hourly data pipeline to generate dims and facts for streamify',
     schedule_interval="5 * * * *", #At the 5th minute of every hour
-    start_date=datetime(2026,3,8,18),
-    catchup=False,
-    max_active_runs=1,
+    start_date=datetime(2026,3,1),
+    end_date=datetime(2026,3,31),
+    catchup=True,
+    max_active_runs=3,
     user_defined_macros=MACRO_VARS,
-    tags=['eventsim']
+    tags=['eventsim', 'backfill']
 ) as dag:
     
     initate_dbt_task = BashOperator(
         task_id = 'dbt_initiate',
-        bash_command = 'cd /dbt && dbt deps && dbt seed --select state_codes --profiles-dir . --target prod',
+        bash_command = 'cd /dbt && dbt seed --select state_codes --profiles-dir . --target prod',
         trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
     )
 
     execute_dbt_task = BashOperator(
         task_id = 'dbt_streamify_run',
-        bash_command = 'cd /dbt && dbt deps && dbt run --profiles-dir . --target prod --exclude dim_songs+ dim_locations+'
+        bash_command = 'cd /dbt && dbt run --profiles-dir . --target prod --exclude dim_songs+ dim_locations+'
     )
 
     for event in EVENTS:
