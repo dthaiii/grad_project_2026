@@ -42,7 +42,8 @@ schema = {
         {"name": "registration", "type": "INTEGER", "mode": "NULLABLE"},
         {"name": "artist", "type": "STRING", "mode": "NULLABLE"},
         {"name": "song", "type": "STRING", "mode": "NULLABLE"},
-        {"name": "duration", "type": "FLOAT64", "mode": "NULLABLE"}
+        {"name": "duration", "type": "FLOAT64", "mode": "NULLABLE"},
+        {"name": "ad_revenue", "type": "FLOAT64", "mode": "NULLABLE"}
     ],
     "auth_events" : [
         {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"},

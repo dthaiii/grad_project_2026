@@ -41,7 +41,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 #     example:
 #       +materialized: table
 models:
-  grad-service-music-pipeline:
+  grad_service_music_pipeline:
     staging:
       +docs:
         node_color: "#cd7f32"

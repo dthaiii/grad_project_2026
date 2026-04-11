@@ -4,7 +4,7 @@ from pathlib import Path
 
 from cosmos import DbtDag, ExecutionConfig, ProfileConfig, ProjectConfig, RenderConfig
 from cosmos.constants import InvocationMode, LoadMode
-from cosmos.profiles import GoogleCloudServiceAccountDictProfileMapping
+from cosmos.profiles import GoogleCloudServiceAccountFileProfileMapping
 
 
 DBT_PROJECT_PATH = Path("/dbt")
@@ -14,7 +14,7 @@ DBT_EXECUTABLE_PATH = Path("/home/airflow/.local/bin/dbt")
 profile_config = ProfileConfig(
     profile_name="default",
     target_name="prod",
-    profile_mapping=GoogleCloudServiceAccountDictProfileMapping(
+    profile_mapping=GoogleCloudServiceAccountFileProfileMapping(
         conn_id="google_cloud_default",
         profile_args={
             "project": os.environ.get("GCP_PROJECT_ID"),
@@ -49,7 +49,7 @@ dbt_workflow_dag = DbtDag(
         "full_refresh": False,
     },
     dag_id="dbt_cosmos_dag",
-    start_date=datetime(2026, 3, 8),
+    start_date=datetime(2026,3,1),
     schedule_interval="0 * * * *",
     catchup=False,
     max_active_runs=1,
