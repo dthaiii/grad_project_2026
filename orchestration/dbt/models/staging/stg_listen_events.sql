@@ -21,7 +21,7 @@ WITH source_listen_events AS (
         {{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }} AS event_datetime,
         TIMESTAMP_TRUNC({{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }}, HOUR) AS bucket_ingestion_datetime,
         userid AS user_id,
-        CAST(zip AS STRING) AS postal_code,
+        NULLIF(NULLIF(CAST(zip AS STRING), '0'), '') AS postal_code,
         COALESCE(city, "NO CITY") AS city,
         COALESCE(state, "NO STATE") AS state,
         level,
@@ -29,7 +29,7 @@ WITH source_listen_events AS (
         artist,
         ROUND(duration, 2) AS duration
     FROM
-        {{ source(env_var('DBT_SOURCE_DATASET'), 'listen_events') }}
+        {{ source('data_staging', 'listen_events') }}
     {% if is_incremental() %}
 
         WHERE {{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }} >= TIMESTAMP_SUB(TIMESTAMP("{{ max_ingestion_datetime }}"), INTERVAL 10 MINUTE)

@@ -23,7 +23,7 @@ WITH source_status_change_events AS (
         userid AS user_id,
         LOWER(level) AS prev_level
     FROM
-        {{ source(env_var('DBT_SOURCE_DATASET'), 'status_change_events') }}
+        {{ source('data_staging', 'status_change_events') }}
     {% if is_incremental() %}
 
         WHERE {{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }} >= TIMESTAMP_SUB(TIMESTAMP("{{ max_ingestion_datetime }}"), INTERVAL 10 MINUTE)

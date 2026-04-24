@@ -23,6 +23,33 @@ WITH dedup_page_view_events AS (
     ) = 1
 ),
 
+location_exact AS (
+    SELECT
+        UPPER(TRIM(city)) AS city_norm,
+        UPPER(TRIM(state_code)) AS state_norm,
+        CAST(raw_postal_code AS STRING) AS raw_postal_code,
+        MIN(pk_location) AS pk_location
+    FROM {{ ref('dim_locations') }}
+    GROUP BY 1, 2, 3
+),
+
+location_fallback AS (
+    SELECT
+        UPPER(TRIM(city)) AS city_norm,
+        UPPER(TRIM(state_code)) AS state_norm,
+        MIN(pk_location) AS pk_location
+    FROM {{ ref('dim_locations') }}
+    GROUP BY 1, 2
+),
+
+user_fallback AS (
+    SELECT
+        user_id,
+        MIN(pk_user) AS pk_user
+    FROM {{ ref('dim_users') }}
+    GROUP BY 1
+),
+
 session_facts_no_first_page AS (
     SELECT
         session_id,
@@ -36,7 +63,7 @@ session_facts_no_first_page AS (
         MIN(event_datetime) AS session_start_datetime,
         {{ dbt.datediff("MIN(event_datetime)", "MAX(event_datetime)", "SECOND") }} 
             AS session_seconds,
-        SUM(CASE page WHEN 'PlayAd' THEN 1 ELSE 0 END) AS num_ads_served,
+        SUM(CASE WHEN ad_revenue > 0 THEN 1 ELSE 0 END) AS num_ads_served,
         SUM(ad_revenue) AS total_ad_revenue
     FROM
         dedup_page_view_events
@@ -65,7 +92,7 @@ session_facts AS (
         dedup_page_view_events AS pve
         ON snf.session_id = pve.session_id
             AND snf.user_id = pve.user_id
-            AND snf.postal_code = pve.postal_code
+            AND snf.postal_code IS NOT DISTINCT FROM pve.postal_code
             AND snf.city = pve.city
             AND snf.state = pve.state
             AND snf.level = pve.level
@@ -76,8 +103,8 @@ fact_session_candidates AS (
     SELECT
         session_facts.session_start_datetime,
         session_facts.session_id,
-        users.pk_user,
-        locations.pk_location,
+        COALESCE(users.pk_user, user_fallback.pk_user) AS pk_user,
+        COALESCE(loc_exact.pk_location, loc_fallback.pk_location) AS pk_location,
         pages.pk_page AS pk_entry_page,
         session_facts.session_seconds,
         session_facts.num_pages_visited,
@@ -96,10 +123,15 @@ fact_session_candidates AS (
         ON session_facts.user_id = users.user_id
             AND session_facts.session_start_datetime >= users.row_effective_datetime
             AND session_facts.session_start_datetime < users.row_expiry_datetime
-    LEFT JOIN {{ ref('dim_locations') }} AS locations
-        ON session_facts.city = locations.city
-            AND session_facts.state = locations.state_code
-            AND session_facts.postal_code = locations.raw_postal_code
+    LEFT JOIN user_fallback
+        ON session_facts.user_id = user_fallback.user_id
+    LEFT JOIN location_exact AS loc_exact
+        ON UPPER(TRIM(session_facts.city)) = loc_exact.city_norm
+            AND UPPER(TRIM(session_facts.state)) = loc_exact.state_norm
+            AND session_facts.postal_code = loc_exact.raw_postal_code
+    LEFT JOIN location_fallback AS loc_fallback
+        ON UPPER(TRIM(session_facts.city)) = loc_fallback.city_norm
+            AND UPPER(TRIM(session_facts.state)) = loc_fallback.state_norm
     LEFT JOIN {{ ref('dim_pages') }} AS pages
         ON session_facts.first_page = pages.page_name
 )

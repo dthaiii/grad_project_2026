@@ -1,8 +1,9 @@
 version: 2
 
 sources:
-  - name: "{{ env_var('DBT_SOURCE_DATASET') }}"
+  - name: ext_data_staging
     database: "{{ env_var('DBT_GCP_PROJECT') }}"
+    schema: data_staging
     loader: GCS
     tags: ["ext_sources"]
     

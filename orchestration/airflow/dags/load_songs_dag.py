@@ -6,7 +6,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
-from airflow.providers.google.cloud.operators.bigquery import BigQueryCreateExternalTableOperator
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 
 
 from google.cloud import storage
@@ -18,7 +18,7 @@ default_args ={
 
 AIRFLOW_HOME = os.environ.get('AIRFLOW_HOME', '/opt/airflow')
 
-URL = 'https://github.com/dthaiii/grad_project_2026/blob/main/orchestration/dbt/seeds/songs.csv'
+URL = 'https://raw.githubusercontent.com/dthaiii/grad_project_2026/main/orchestration/dbt/seeds/songs.csv'
 CSV_FILENAME = 'songs.csv'
 PARQUET_FILENAME = CSV_FILENAME.replace('csv', 'parquet')
 
@@ -28,7 +28,7 @@ TABLE_NAME = 'songs'
 
 GCP_PROJECT_ID = os.environ.get('GCP_PROJECT_ID')
 GCP_GCS_BUCKET = os.environ.get('GCP_GCS_BUCKET')
-BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET', 'eventsim_stgging')
+BIGQUERY_DATASET = os.environ.get('BIGQUERY_DATASET', 'data_staging')
 
 
 def convert_to_parquet(csv_file, parquet_file):
@@ -65,8 +65,8 @@ with DAG(
     default_args = default_args,
     description = f'Execute only once to create songs table in bigquery',
     schedule_interval="@once", #At the 5th minute of every hour
-    start_date=datetime(2026,3,8),
-    end_date=datetime(2026,4,8),
+    start_date=datetime(2026,3,15),
+    end_date=datetime(2026,4,15),
     catchup=True,
     tags=['eventsim']
 ) as dag:
@@ -100,19 +100,16 @@ with DAG(
         bash_command=f'rm {CSV_OUTFILE} {PARQUET_OUTFILE}'
     )
 
-    create_external_table_task = BigQueryCreateExternalTableOperator(
-        task_id = f'create_external_table',
-        table_resource = {
-            'tableReference': {
-            'projectId': GCP_PROJECT_ID,
-            'datasetId': BIGQUERY_DATASET,
-            'tableId': TABLE_NAME,
-            },
-            'externalDataConfiguration': {
-                'sourceFormat': 'PARQUET',
-                'sourceUris': [f'gs://{GCP_GCS_BUCKET}/{TABLE_NAME}/*.parquet'],
-            },
-        }
+    load_raw_songs_to_bigquery_task = GCSToBigQueryOperator(
+        task_id='load_raw_songs_to_bigquery',
+        bucket=GCP_GCS_BUCKET,
+        source_objects=[f'{TABLE_NAME}/*.parquet'],
+        destination_project_dataset_table=f'{GCP_PROJECT_ID}.{BIGQUERY_DATASET}.{TABLE_NAME}',
+        source_format='PARQUET',
+        autodetect=True,
+        write_disposition='WRITE_TRUNCATE',
+        create_disposition='CREATE_IF_NEEDED',
+        gcp_conn_id='google_cloud_default',
     )
 
-    download_songs_file_task >> convert_to_parquet_task >> upload_to_gcs_task >> remove_files_from_local_task >> create_external_table_task
+    download_songs_file_task >> convert_to_parquet_task >> upload_to_gcs_task >> remove_files_from_local_task >> load_raw_songs_to_bigquery_task

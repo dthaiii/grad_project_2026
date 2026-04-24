@@ -52,9 +52,9 @@ x-airflow-common:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
     # Concurrency caps for 2 vCPU / 8 GB VM to prevent OOM and task storms.
-    AIRFLOW__CORE__PARALLELISM: 4
-    AIRFLOW__CORE__DAG_CONCURRENCY: 2
-    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 2
+    AIRFLOW__CORE__PARALLELISM: 16
+    AIRFLOW__CORE__DAG_CONCURRENCY: 8
+    AIRFLOW__CORE__MAX_ACTIVE_TASKS_PER_DAG: 8
     AIRFLOW__CORE__DAGBAG_IMPORT_TIMEOUT: 120
     AIRFLOW__SCHEDULER__PARSING_PROCESSES: 1
     AIRFLOW__SCHEDULER__MAX_THREADS: 1
@@ -72,7 +72,7 @@ x-airflow-common:
     #_PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- dbt-bigquery==1.0.0 astronomer-cosmos}
     GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
     DBT_GOOGLE_BIGQUERY_KEYFILE: /.google/credentials/google_credentials.json
-    AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: 'google-cloud-platform://?extra__google_cloud_platform__key_path=/.google/credentials/google_credentials.json'
+    # Đã xoá bỏ AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT vì đã được khởi tạo qua CLI ở airflow-init
     GCP_PROJECT_ID: '${GCP_PROJECT_ID}'
     GCP_GCS_BUCKET: '${GCP_GCS_BUCKET}'
     BIGQUERY_DATASET: '${BIGQUERY_DATASET}'
@@ -254,6 +254,11 @@ services:
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
+        
+        airflow connections add 'google_cloud_default' \
+            --conn-type 'google_cloud_platform' \
+            --conn-extra '{"extra__google_cloud_platform__key_path": "/.google/credentials/google_credentials.json", "extra__google_cloud_platform__project": "'"$${GCP_PROJECT_ID}"'"}' || true
+            
         exec /entrypoint airflow version
     # yamllint enable rule:line-length
     environment:

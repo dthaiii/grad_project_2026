@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: data_staging
+    database: "{{ env_var('DBT_GCP_PROJECT') }}"
+    schema: data_staging
+    loader: airflow_raw_ingestion
+    tables:
+      - name: auth_events
+      - name: listen_events
+      - name: page_view_events
+      - name: session_start_end_events
+      - name: status_change_events
+      - name: user_info
+      - name: songs
+      - name: songs_ext
+      - name: locations_ext

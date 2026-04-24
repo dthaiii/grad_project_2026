@@ -1,6 +1,55 @@
 version: 2
 
 models:
+  - name: fact_page_view_events
+    description: >
+      Page-view fact table enriched with user attributes and ad revenue calculation.
+    config:
+      tags: "fact"
+    columns:
+      - name: ts
+        data_type: integer
+        description: Raw event timestamp in milliseconds.
+      - name: sessionId
+        data_type: integer
+        description: Session id from source event.
+      - name: page
+        data_type: string
+        description: Page name from source event.
+      - name: auth
+        data_type: string
+        description: Authentication state from source event.
+      - name: artist
+        data_type: string
+        description: Artist name from source event.
+      - name: song
+        data_type: string
+        description: Song title from source event.
+      - name: duration
+        data_type: float
+        description: Song duration from source event.
+      - name: userId
+        data_type: integer
+        description: User id after type normalization for joins.
+      - name: firstName
+        data_type: string
+        description: Enriched first name using event value fallback to stg_user_info.
+      - name: lastName
+        data_type: string
+        description: Enriched last name using event value fallback to stg_user_info.
+      - name: gender
+        data_type: string
+        description: Enriched gender using event value fallback to stg_user_info.
+      - name: zip
+        data_type: string
+        description: Enriched postal code using event value fallback to stg_user_info.
+      - name: level
+        data_type: string
+        description: Enriched subscription level using event value fallback to stg_user_info.
+      - name: ad_revenue
+        data_type: float
+        description: 0.005 only when page is NextSong and level is free, otherwise 0.
+
   - name: fact_listen_events
     description: >
       Each row represents a user listening to a song at a specific time.
@@ -116,7 +165,9 @@ models:
 
       - name: num_ads_served
         data_type: integer
-        description: The number of ads served to the user during this session.
+        description: >
+          Count of monetized events in the session where ad_revenue > 0,
+          equivalent to page = 'NextSong' and level = 'free'.
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
@@ -124,10 +175,10 @@ models:
               severity: warn
 
       - name: total_ad_revenue
-        data_type: integer
+        data_type: float
         description: >
-          The total ad revenue generated during this session.
-          Note: This is NULL when the user is on the 'paid' subscription tier.
+          Sum of standardized ad_revenue across session events.
+          ad_revenue is 0.005 only for page = 'NextSong' and level = 'free'; otherwise 0.0.
         tests:
           - dbt_utils.accepted_range:
               min_value: 0

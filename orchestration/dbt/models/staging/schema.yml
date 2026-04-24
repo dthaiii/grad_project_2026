@@ -50,6 +50,32 @@ models:
         data_type: timestamp
         description: The time when the user registered.
 
+  - name: stg_user_info
+    description: >
+      Consolidated user reference model with latest user profile and latest known postal code.
+      Used for data enrichment in downstream silver/fact models.
+    config:
+      tags: "staging"
+    columns:
+      - name: user_id
+        data_type: integer
+        description: Unique user id.
+      - name: first_name
+        data_type: string
+        description: User first name.
+      - name: last_name
+        data_type: string
+        description: User last name.
+      - name: gender
+        data_type: string
+        description: User gender.
+      - name: zip
+        data_type: string
+        description: Latest known postal code for the user.
+      - name: level
+        data_type: string
+        description: Latest known subscription level for the user.
+
   - name: stg_status_change_events
     description: >
       Staging table for status change events, which refer to a user upgrading / downgrading
@@ -246,7 +272,7 @@ models:
         description: The user agent used to access this page.
       
       - name: ad_revenue
-        data_type: string
+        data_type: float
         description: >
-          The ad revenue generated from ads shown on this page.
-          Note: this field is NULL when there are no ads on this page.
+          Standardized ad revenue at event level.
+          Set to 0.005 only when page = 'NextSong' and level = 'free'; otherwise 0.0.

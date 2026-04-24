@@ -42,9 +42,15 @@ clean-targets:         # directories to be removed by `dbt clean`
 #       +materialized: table
 models:
   grad_service_music_pipeline:
+    +materialized: table
     staging:
+      +schema: stg
       +docs:
         node_color: "#cd7f32"
+    core:
+      +schema: ods
+    marts:
+      +schema: rpt
 
 
 # The default time zone to use for dbt-date package

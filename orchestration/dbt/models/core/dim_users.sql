@@ -28,15 +28,58 @@ final_state AS (
             AND status.user_id = final_change.user_id
 ),
 
+event_user_profile AS (
+    SELECT
+        user_id,
+        MAX(level) AS level,
+        MIN(event_datetime) AS registration_datetime
+    FROM (
+        SELECT user_id, level, event_datetime
+        FROM {{ ref('stg_listen_events') }}
+
+        UNION ALL
+
+        SELECT user_id, level, event_datetime
+        FROM {{ ref('stg_page_view_events') }}
+    ) AS all_events
+    GROUP BY user_id
+),
+
 user_info AS (
     SELECT DISTINCT
         user_id,
         first_name,
         last_name,
         gender,
+        level,
         registration_datetime
     FROM
         {{ ref('stg_users') }}
+),
+
+user_info_with_fallback AS (
+    SELECT
+        info.user_id,
+        info.first_name,
+        info.last_name,
+        info.gender,
+        info.level,
+        info.registration_datetime
+    FROM user_info AS info
+
+    UNION ALL
+
+    SELECT
+        event.user_id,
+        'NA' AS first_name,
+        'NA' AS last_name,
+        'NA' AS gender,
+        COALESCE(event.level, 'free') AS level,
+        event.registration_datetime
+    FROM event_user_profile AS event
+    LEFT JOIN user_info AS info
+        ON event.user_id = info.user_id
+    WHERE info.user_id IS NULL
 ),
 
 dim_user_no_pk AS (
@@ -52,7 +95,7 @@ dim_user_no_pk AS (
         final_state.row_expiry_datetime
     FROM
         final_state
-    INNER JOIN user_info
+    INNER JOIN user_info_with_fallback AS user_info
         ON final_state.user_id = user_info.user_id
 
     UNION ALL
@@ -74,11 +117,11 @@ dim_user_no_pk AS (
         ) AS row_effective_datetime,
         COALESCE(status.event_datetime, '9999-01-01') AS row_expiry_datetime
     FROM
-        {{ ref('stg_users') }} AS users
+        user_info_with_fallback AS users
     LEFT JOIN {{ ref('stg_status_change_events') }} AS status
         ON users.user_id = status.user_id
     WHERE status.event_datetime IS NULL
-        OR status.event_datetime >= users.event_datetime
+        OR status.event_datetime >= users.registration_datetime
 )
 
 SELECT

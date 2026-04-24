@@ -17,7 +17,7 @@ SELECT
     {{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }} AS event_datetime,
     TIMESTAMP_TRUNC({{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }}, HOUR) AS bucket_ingestion_datetime,
     userid AS user_id,
-    CAST(zip AS STRING) AS postal_code,
+    NULLIF(NULLIF(CAST(zip AS STRING), '0'), '') AS postal_code,
     COALESCE(city, "NO CITY") AS city,
     COALESCE(state, "NO STATE") AS state,
     level,
@@ -25,9 +25,12 @@ SELECT
     iteminsession AS item_in_session,
     page,
     TRIM(useragent, '"') AS user_agent,
-    COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(t), '$.ad_revenue') AS FLOAT64), 0.0) AS ad_revenue
+    CASE
+        WHEN page = 'NextSong' AND level = 'free' THEN 0.005
+        ELSE 0.0
+    END AS ad_revenue
 FROM
-    {{ source(env_var('DBT_SOURCE_DATASET'), 'page_view_events') }} AS t
+    {{ source('data_staging', 'page_view_events') }} AS t
 WHERE auth = "Logged In"
     {% if is_incremental() %}
     

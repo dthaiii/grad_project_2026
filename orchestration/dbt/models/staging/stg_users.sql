@@ -21,7 +21,7 @@ SELECT
         dbt_date.from_unixtimestamp("registration", format="milliseconds") 
     }} AS registration_datetime
 FROM
-    {{ source(env_var('DBT_SOURCE_DATASET'), 'user_info') }} AS t
+    {{ source('data_staging', 'user_info') }} AS t
 {% if is_incremental() %}
 
     WHERE {{ dbt_date.from_unixtimestamp("ts", format="milliseconds") }} >= TIMESTAMP_SUB(TIMESTAMP("{{ max_ingestion_datetime }}"), INTERVAL 10 MINUTE)

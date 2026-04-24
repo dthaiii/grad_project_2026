@@ -10,4 +10,4 @@ SELECT DISTINCT
     COALESCE(state, "NO STATE") AS state,
     CAST(state_code AS STRING) AS state_code
 FROM
-    {{ source(env_var('DBT_SOURCE_DATASET'), 'locations_ext') }}
+    {{ source('data_staging', 'locations_ext') }}

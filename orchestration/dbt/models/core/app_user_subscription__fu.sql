@@ -1,0 +1,56 @@
+{{ config(
+    materialized='incremental',
+    incremental_strategy='merge',
+    unique_key=['user_id', 'tf_partition_date'],
+    on_schema_change='sync_all_columns',
+    partition_by={
+      "field": "tf_partition_date",
+      "data_type": "date",
+      "granularity": "day"
+    }
+) }}
+
+WITH status_by_day AS (
+    SELECT
+        user_id,
+        DATE(event_datetime) AS tf_partition_date,
+        prev_level,
+        CASE
+            WHEN prev_level = 'free' THEN 'paid'
+            ELSE 'free'
+        END AS curr_level,
+        MAX(event_datetime) AS latest_event_datetime
+    FROM {{ ref('stg_status_change_events') }}
+    GROUP BY 1, 2, 3, 4
+)
+
+{% if is_incremental() %}
+, existing AS (
+    SELECT
+        user_id,
+        tf_partition_date,
+        tf_created_at
+    FROM {{ this }}
+)
+{% endif %}
+
+SELECT
+    src.user_id,
+    src.tf_partition_date,
+    src.prev_level,
+    src.curr_level,
+    src.latest_event_datetime,
+    {% if is_incremental() %}
+    COALESCE(ex.tf_created_at, CURRENT_TIMESTAMP()) AS tf_created_at,
+    {% else %}
+    CURRENT_TIMESTAMP() AS tf_created_at,
+    {% endif %}
+    CURRENT_TIMESTAMP() AS tf_updated_at,
+    CURRENT_TIMESTAMP() AS tf_etl_at,
+    1 AS tf_record_status
+FROM status_by_day AS src
+{% if is_incremental() %}
+LEFT JOIN existing AS ex
+    ON src.user_id = ex.user_id
+   AND src.tf_partition_date = ex.tf_partition_date
+{% endif %}

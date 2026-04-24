@@ -29,6 +29,33 @@ WITH dedup_listen_events AS (
     ) = 1
 ),
 
+location_exact AS (
+    SELECT
+        UPPER(TRIM(city)) AS city_norm,
+        UPPER(TRIM(state_code)) AS state_norm,
+        CAST(raw_postal_code AS STRING) AS raw_postal_code,
+        MIN(pk_location) AS pk_location
+    FROM {{ ref('dim_locations') }}
+    GROUP BY 1, 2, 3
+),
+
+location_fallback AS (
+    SELECT
+        UPPER(TRIM(city)) AS city_norm,
+        UPPER(TRIM(state_code)) AS state_norm,
+        MIN(pk_location) AS pk_location
+    FROM {{ ref('dim_locations') }}
+    GROUP BY 1, 2
+),
+
+user_fallback AS (
+    SELECT
+        user_id,
+        MIN(pk_user) AS pk_user
+    FROM {{ ref('dim_users') }}
+    GROUP BY 1
+),
+
 song_match_candidates AS (
     SELECT
         listen.event_datetime,
@@ -86,8 +113,8 @@ fact_listen_candidates AS (
         listen.song,
         listen.artist,
         listen.duration,
-        users.pk_user,
-        locations.pk_location,
+        COALESCE(users.pk_user, user_fallback.pk_user) AS pk_user,
+        COALESCE(loc_exact.pk_location, loc_fallback.pk_location) AS pk_location,
         listen.pk_song,
         ROW_NUMBER() OVER (
             PARTITION BY
@@ -107,10 +134,15 @@ fact_listen_candidates AS (
         ON listen.user_id = users.user_id
             AND listen.event_datetime >= users.row_effective_datetime
             AND listen.event_datetime < users.row_expiry_datetime
-    LEFT JOIN {{ ref('dim_locations') }} AS locations
-        ON listen.city = locations.city
-            AND listen.state = locations.state_code
-            AND listen.postal_code = locations.raw_postal_code
+    LEFT JOIN user_fallback
+        ON listen.user_id = user_fallback.user_id
+    LEFT JOIN location_exact AS loc_exact
+        ON UPPER(TRIM(listen.city)) = loc_exact.city_norm
+            AND UPPER(TRIM(listen.state)) = loc_exact.state_norm
+            AND listen.postal_code = loc_exact.raw_postal_code
+    LEFT JOIN location_fallback AS loc_fallback
+        ON UPPER(TRIM(listen.city)) = loc_fallback.city_norm
+            AND UPPER(TRIM(listen.state)) = loc_fallback.state_norm
 )
 
 SELECT
