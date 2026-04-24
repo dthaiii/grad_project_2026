@@ -20,7 +20,7 @@ WITH status_by_day AS (
             ELSE 'free'
         END AS curr_level,
         MAX(event_datetime) AS latest_event_datetime
-    FROM {{ ref('stg_status_change_events') }}
+    FROM {{ ref('stg_status_change_events__fa') }}
     GROUP BY 1, 2, 3, 4
 )
 

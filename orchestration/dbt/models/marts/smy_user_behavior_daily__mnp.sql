@@ -12,7 +12,7 @@ WITH page_counts AS (
         COUNTIF(page = 'Help') AS help_clicks,
         COUNTIF(page = 'Error') AS error_count,
         COUNT(DISTINCT session_id) AS total_sessions
-    FROM {{ ref('stg_page_view_events') }}
+    FROM {{ ref('stg_page_view_events__fa') }}
     GROUP BY 1, 2
 ),
 
@@ -21,7 +21,7 @@ listen_stats AS (
         user_id,
         DATE(event_datetime) AS activity_date,
         SUM(duration) AS total_listening_time
-    FROM {{ ref('stg_listen_events') }}
+    FROM {{ ref('stg_listen_events__fa') }}
     GROUP BY 1, 2
 )
 

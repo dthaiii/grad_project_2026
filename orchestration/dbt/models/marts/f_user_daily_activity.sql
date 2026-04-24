@@ -18,7 +18,7 @@ WITH behavior AS (
         error_count,
         total_sessions,
         total_listening_time
-    FROM {{ ref('mart_user_behavior_daily') }}
+    FROM {{ ref('smy_user_behavior_daily__mnp') }}
 ),
 
 listening AS (
@@ -28,7 +28,7 @@ listening AS (
         total_songs_listened,
         total_listening_minutes,
         unique_artists_listened
-    FROM {{ ref('mart_user_listening_stats') }}
+    FROM {{ ref('smy_user_listening_stats__mnp') }}
 ),
 
 subscription AS (
@@ -36,7 +36,7 @@ subscription AS (
         user_id,
         user_subscription_segment,
         days_to_upgrade
-    FROM {{ ref('mart_user_subscription_journey') }}
+    FROM {{ ref('smy_user_subscription_journey__mnp') }}
 )
 
 SELECT

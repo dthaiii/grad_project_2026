@@ -1,0 +1,19 @@
+version: 2
+
+snapshots:
+  - name: app_user_profile__s2
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: dbt_valid_from
+        tests: [not_null]
+      - name: tf_created_at
+        tests: [not_null]
+      - name: tf_updated_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+      - name: tf_record_status
+        tests:
+          - accepted_values:
+              values: [0, 1]

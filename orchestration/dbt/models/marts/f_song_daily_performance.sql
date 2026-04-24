@@ -16,7 +16,7 @@ WITH base AS (
         play_count,
         unique_listeners,
         rank
-    FROM {{ ref('mart_daily_trending_songs') }}
+    FROM {{ ref('smy_daily_trending_songs__mnp') }}
 ),
 
 daily_totals AS (

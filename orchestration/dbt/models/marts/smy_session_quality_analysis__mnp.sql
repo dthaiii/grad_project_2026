@@ -11,7 +11,7 @@ WITH session_events AS (
         MAX(event_datetime) AS session_end_datetime,
         TIMESTAMP_DIFF(MAX(event_datetime), MIN(event_datetime), MINUTE) AS session_duration_minutes,
         COUNT(*) AS total_events_in_session
-    FROM {{ ref('stg_page_view_events') }}
+    FROM {{ ref('stg_page_view_events__fa') }}
     GROUP BY 1, 2
 )
 

@@ -10,7 +10,7 @@ WITH user_activity AS (
         COUNT(song) AS total_songs_listened,
         SUM(duration) AS total_listening_time_seconds,
         COUNT(DISTINCT artist) AS unique_artists_listened
-    FROM {{ ref('stg_listen_events') }}
+    FROM {{ ref('stg_listen_events__fa') }}
     GROUP BY 1, 2
 ),
 
@@ -21,7 +21,7 @@ user_demographics AS (
         last_name,
         gender,
         level AS user_tier
-    FROM {{ ref('dim_users') }}
+    FROM {{ ref('app_users__s2') }}
     QUALIFY ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY row_effective_datetime DESC) = 1
 )
 

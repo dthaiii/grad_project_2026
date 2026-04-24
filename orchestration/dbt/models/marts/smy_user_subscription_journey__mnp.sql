@@ -9,7 +9,7 @@ WITH user_registration AS (
         MIN(registration_datetime) AS registration_datetime,
         MIN(first_name) AS first_name,
         MIN(last_name) AS last_name
-    FROM {{ ref('stg_users') }}
+    FROM {{ ref('stg_users__fu') }}
     GROUP BY 1
 ),
 
@@ -17,7 +17,7 @@ upgrade_events AS (
     SELECT
         user_id,
         MIN(event_datetime) AS subscription_upgrade_datetime
-    FROM {{ ref('stg_status_change_events') }}
+    FROM {{ ref('stg_status_change_events__fa') }}
     WHERE LOWER(prev_level) = 'free'
     GROUP BY 1
 )

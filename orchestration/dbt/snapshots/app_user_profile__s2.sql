@@ -22,6 +22,6 @@ SELECT
     TIMESTAMP('3000-01-01') AS tf_updated_at,
     CURRENT_TIMESTAMP() AS tf_etl_at,
     1 AS tf_record_status
-FROM {{ ref('stg_users') }}
+FROM {{ ref('stg_users__fu') }}
 
 {% endsnapshot %}

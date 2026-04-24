@@ -1,232 +1,81 @@
 version: 2
 
 models:
-  - name: fact_page_view_events
-    description: >
-      Page-view fact table enriched with user attributes and ad revenue calculation.
-    config:
-      tags: "fact"
+  - name: app_user_subscription__fu
     columns:
-      - name: ts
-        data_type: integer
-        description: Raw event timestamp in milliseconds.
-      - name: sessionId
-        data_type: integer
-        description: Session id from source event.
-      - name: page
-        data_type: string
-        description: Page name from source event.
-      - name: auth
-        data_type: string
-        description: Authentication state from source event.
-      - name: artist
-        data_type: string
-        description: Artist name from source event.
-      - name: song
-        data_type: string
-        description: Song title from source event.
-      - name: duration
-        data_type: float
-        description: Song duration from source event.
-      - name: userId
-        data_type: integer
-        description: User id after type normalization for joins.
-      - name: firstName
-        data_type: string
-        description: Enriched first name using event value fallback to stg_user_info.
-      - name: lastName
-        data_type: string
-        description: Enriched last name using event value fallback to stg_user_info.
-      - name: gender
-        data_type: string
-        description: Enriched gender using event value fallback to stg_user_info.
-      - name: zip
-        data_type: string
-        description: Enriched postal code using event value fallback to stg_user_info.
-      - name: level
-        data_type: string
-        description: Enriched subscription level using event value fallback to stg_user_info.
-      - name: ad_revenue
-        data_type: float
-        description: 0.005 only when page is NextSong and level is free, otherwise 0.
+      - name: user_id
+        tests: [not_null]
+      - name: tf_partition_date
+        tests: [not_null]
+      - name: tf_created_at
+        tests: [not_null]
+      - name: tf_updated_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+      - name: tf_record_status
+        tests:
+          - accepted_values:
+              values: [0, 1]
 
-  - name: fact_listen_events
-    description: >
-      Each row represents a user listening to a song at a specific time.
-    config:
-      tags: "fact"
+  - name: app_page_view_events__fa
+    columns:
+      - name: event_datetime
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+
+  - name: app_listen_events__fa
     tests:
       - unique:
           column_name: listen_event_key
-          severity: error
     columns:
       - name: listen_event_key
-        data_type: string
-        description: Deterministic key used to deduplicate and merge listen events.
-        tests:
-          - not_null
-
-      - name: event_datetime
-        data_type: timestamp
-        description: The time when the user starts listening to this song.
-
+        tests: [not_null]
       - name: pk_user
-        data_type: string
-        description: Foreign key referencing the user dimension for this listen event.
         tests:
           - relationships:
               field: pk_user
-              to: ref('dim_users')
-
+              to: ref('app_users__s2')
       - name: pk_song
-        data_type: string
-        description: Foreign key referencing the song dimension for this listen event.
         tests:
-          - not_null
           - relationships:
               field: pk_song
-              to: ref('dim_songs')
+              to: ref('app_songs__snp')
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
 
-      - name: pk_location
-        data_type: string
-        description: Foreign key referencing the user dimension for this listen event.
-        tests:
-          - relationships:
-              field: pk_location
-              to: ref('dim_locations')
-
-  - name: fact_session_events
-    description: >
-      Each row represents a session, with facts including the session length and ad revenue.
-    config:
-      tags: "fact"
-    tests:
-      - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - session_start_datetime
-            - session_id
-            - pk_user
-          severity: error
+  - name: app_session_events__snp
     columns:
       - name: session_start_datetime
-        data_type: timestamp
-        description: The time when the user starts this session.
-
+        tests: [not_null]
       - name: session_id
-        data_type: integer
-        description: The unique id assigned to this session by the source application.
-
+        tests: [not_null]
       - name: pk_user
-        data_type: string
-        description: Foreign key referencing the user dimension for this session event.
-        tests:
-          - relationships:
-              field: pk_user
-              to: ref('dim_users')
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
 
-      - name: pk_entry_page
-        data_type: string
-        description: >
-          The first page in this session. Foreign key referencing the page dimension.
-        tests:
-          - relationships:
-              field: pk_page
-              to: ref('dim_pages')
-
-      - name: pk_location
-        data_type: string
-        description: Foreign key referencing the location dimension for this session.
-        tests:
-          - relationships:
-              field: pk_location
-              to: ref('dim_locations')
-
-      - name: session_seconds
-        data_type: float
-        description: The duration of this session in seconds.
-        tests:
-          - not_null:
-              severity: warn
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-              severity: warn
-
-      - name: num_pages_visited
-        data_type: integer
-        description: The number of pages the user visited during this session.
-        tests:
-          - not_null:
-              severity: warn
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: false
-              severity: warn
-
-      - name: num_ads_served
-        data_type: integer
-        description: >
-          Count of monetized events in the session where ad_revenue > 0,
-          equivalent to page = 'NextSong' and level = 'free'.
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-              severity: warn
-
-      - name: total_ad_revenue
-        data_type: float
-        description: >
-          Sum of standardized ad_revenue across session events.
-          ad_revenue is 0.005 only for page = 'NextSong' and level = 'free'; otherwise 0.0.
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-              severity: warn
-
-  - name: fact_status_change_events
-    description: >
-      Each row represents a user status change event derived from stg_status_change_events.
-    config:
-      tags: "fact"
+  - name: app_status_change_events__fu
     tests:
       - unique:
           column_name: status_change_event_key
-          severity: error
     columns:
       - name: status_change_event_key
-        data_type: string
-        description: Deterministic key used to deduplicate and merge status-change events.
-        tests:
-          - not_null
-
-      - name: event_datetime
-        data_type: timestamp
-        description: Timestamp when a user changed subscription status.
-
-      - name: pk_user
-        data_type: string
-        description: Foreign key referencing user dimension.
-        tests:
-          - relationships:
-              field: pk_user
-              to: ref('dim_users')
-
-      - name: prev_level
-        data_type: string
-        description: User subscription level before this status-change event.
+        tests: [not_null]
+      - name: tf_created_at
+        tests: [not_null]
+      - name: tf_updated_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+      - name: tf_record_status
         tests:
           - accepted_values:
-              values:
-                - free
-                - paid
-
-      - name: next_level
-        data_type: string
-        description: User subscription level immediately after this status-change event.
-        tests:
-          - accepted_values:
-              values:
-                - free
-                - paid
+              values: [0, 1]

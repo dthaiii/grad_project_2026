@@ -4,7 +4,6 @@ from datetime import datetime
 from airflow import DAG
 from airflow.datasets import Dataset
 from airflow.operators.bash import BashOperator
-from airflow.utils.trigger_rule import TriggerRule
 
 EVENTS = ['auth_events', 
           'listen_events', 
@@ -39,9 +38,24 @@ with DAG(
         bash_command='cd /dbt && dbt seed --select state_codes --profiles-dir . --target prod',
     )
 
-    execute_dbt_task = BashOperator(
-        task_id='dbt_run',
-        bash_command='cd /dbt && dbt run --profiles-dir . --target prod'
+    run_stg_layer_task = BashOperator(
+        task_id='dbt_run_stg_layer',
+        bash_command='cd /dbt && dbt run --select tag:layer_stg --profiles-dir . --target prod',
     )
 
-    initiate_dbt_task >> execute_dbt_task
+    run_s2_snapshot_task = BashOperator(
+        task_id='dbt_snapshot_s2_layer',
+        bash_command='cd /dbt && dbt snapshot --select app_user_profile__s2 --profiles-dir . --target prod',
+    )
+
+    run_ods_layer_task = BashOperator(
+        task_id='dbt_run_ods_layer',
+        bash_command='cd /dbt && dbt run --select tag:layer_ods --profiles-dir . --target prod',
+    )
+
+    run_rpt_layer_task = BashOperator(
+        task_id='dbt_run_rpt_layer',
+        bash_command='cd /dbt && dbt run --select tag:layer_rpt --profiles-dir . --target prod',
+    )
+
+    initiate_dbt_task >> run_stg_layer_task >> run_s2_snapshot_task >> run_ods_layer_task >> run_rpt_layer_task

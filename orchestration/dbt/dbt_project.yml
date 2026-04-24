@@ -45,12 +45,15 @@ models:
     +materialized: table
     staging:
       +schema: stg
+      +tags: ["layer_stg"]
       +docs:
         node_color: "#cd7f32"
     core:
       +schema: ods
+      +tags: ["layer_ods"]
     marts:
       +schema: rpt
+      +tags: ["layer_rpt"]
 
 
 # The default time zone to use for dbt-date package

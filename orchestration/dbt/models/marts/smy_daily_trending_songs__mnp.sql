@@ -10,7 +10,7 @@ WITH daily_listens AS (
         artist,
         COUNT(*) AS play_count,
         COUNT(DISTINCT user_id) AS unique_listeners
-    FROM {{ ref('stg_listen_events') }}
+    FROM {{ ref('stg_listen_events__fa') }}
     GROUP BY 1, 2, 3
 )
 

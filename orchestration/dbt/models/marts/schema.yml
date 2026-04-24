@@ -1,77 +1,68 @@
 version: 2
 
 models:
-  - name: mart_fact_user_daily_activity
-    description: >
-      Fact-like mart at grain user_id + activity_date, built only from mart layer
-      models to support user behavior analytics.
+  - name: d_user_profile
+    columns:
+      - name: user_id
+        tests: [not_null, unique]
+      - name: tf_updated_at
+        tests: [not_null]
+
+  - name: smy_user_behavior_daily__mnp
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: activity_date
+        tests: [not_null]
+
+  - name: smy_user_listening_stats__mnp
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: activity_date
+        tests: [not_null]
+
+  - name: smy_user_subscription_journey__mnp
+    columns:
+      - name: user_id
+        tests: [not_null]
+
+  - name: smy_daily_trending_songs__mnp
+    columns:
+      - name: activity_date
+        tests: [not_null]
+      - name: song
+        tests: [not_null]
+
+  - name: smy_session_quality_analysis__mnp
+    columns:
+      - name: user_id
+        tests: [not_null]
+      - name: session_id
+        tests: [not_null]
+
+  - name: f_user_daily_activity
     tests:
       - unique:
           column_name: user_activity_fact_key
-          severity: error
     columns:
       - name: user_activity_fact_key
-        tests:
-          - not_null
-
+        tests: [not_null]
       - name: user_id
-        tests:
-          - not_null
-
+        tests: [not_null]
       - name: activity_date
-        tests:
-          - not_null
+        tests: [not_null]
 
-      - name: total_sessions
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-              severity: warn
-
-      - name: total_songs_listened
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-              severity: warn
-
-  - name: mart_fact_song_daily_performance
-    description: >
-      Fact-like mart at grain activity_date + song + artist, built from daily
-      trending mart for content performance analysis.
+  - name: f_song_daily_performance
     tests:
       - unique:
           column_name: song_daily_fact_key
-          severity: error
     columns:
       - name: song_daily_fact_key
-        tests:
-          - not_null
-
+        tests: [not_null]
       - name: activity_date
-        tests:
-          - not_null
-
+        tests: [not_null]
       - name: song
-        tests:
-          - not_null
-
+        tests: [not_null]
       - name: artist
-        tests:
-          - not_null
-
-      - name: play_count
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              inclusive: true
-              severity: warn
-
-      - name: play_share_pct
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 1
-              inclusive: true
-              severity: warn
+        tests: [not_null]
