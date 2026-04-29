@@ -2,7 +2,7 @@
 # Name your project! Project names should contain only lowercase characters
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
-name: 'grad_service_music_pipeline'
+name: 'grad2026'
 version: '1.0.0'
 config-version: 2
 
@@ -41,7 +41,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 #     example:
 #       +materialized: table
 models:
-  grad_service_music_pipeline:
+  grad2026:
     +materialized: table
     staging:
       +schema: stg

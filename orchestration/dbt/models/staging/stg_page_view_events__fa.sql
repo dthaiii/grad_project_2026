@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='append',
+  incremental_strategy='insert_overwrite',
     on_schema_change='append_new_columns',
     partition_by={
       "field": "event_datetime",

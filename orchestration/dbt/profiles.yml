@@ -7,6 +7,7 @@ default:
       keyfile: "{{ env_var('DBT_GOOGLE_BIGQUERY_KEYFILE') }}"
       project: "{{ env_var('DBT_GCP_PROJECT') }}"
       dataset: "{{ env_var('DBT_BIGQUERY_DATASET') }}"
+      location: "{{ env_var('DBT_BIGQUERY_LOCATION', 'us-central1') }}"
       threads: 8
       timeout_seconds: 300
       priority: interactive
