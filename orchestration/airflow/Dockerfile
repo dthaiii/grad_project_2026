@@ -1,25 +1,21 @@
-# First-time build can take upto 10 mins.
-
 FROM apache/airflow:2.7.3-python3.9
 
 ENV AIRFLOW_HOME=/opt/airflow
 
 USER root
+
 RUN apt-get update && \
     ACCEPT_EULA=Y apt-get upgrade -y && \
     apt-get install -y git libpq-dev gcc && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# git gcc g++ -qqq
-
-USER root
 SHELL ["/bin/bash", "-o", "pipefail", "-e", "-u", "-x", "-c"]
 
-ARG CLOUD_SDK_VERSION=322.0.0
+ARG CLOUD_SDK_VERSION=322.0.0X
+
 ENV GCLOUD_HOME=/home/google-cloud-sdk
 
 ENV PATH="${GCLOUD_HOME}/bin/:${PATH}"
-
 RUN DOWNLOAD_URL="https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${CLOUD_SDK_VERSION}-linux-x86_64.tar.gz" \
     && TMP_DIR="$(mktemp -d)" \
     && curl -fL "${DOWNLOAD_URL}" --output "${TMP_DIR}/google-cloud-sdk.tar.gz" \

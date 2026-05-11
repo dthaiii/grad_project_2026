@@ -27,8 +27,8 @@ with DAG(
     default_args=default_args,
     description='Consumer DAG running dbt dependent on 6 BigQuery Datasets',
     schedule=trigger_datasets, # Kích hoạt khi tất cả outlets cập nhật
-    start_date=datetime(2026, 3, 16),
-    catchup=False,
+    start_date=datetime(2026, 3, 15),
+    catchup=True,
     max_active_runs=1, # Tối ưu hóa max_active_runs
     tags=['dbt', 'consumer']
 ) as dag:

@@ -4,6 +4,7 @@ SELECT
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.lastName'), 'NA') AS lastName,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.firstName'), 'NA') AS firstName,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.gender'), 'NA') AS gender,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.level'), 'free') AS level,
     COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.registration') AS INT64), 0) AS registration,
     COALESCE(
         SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.ts') AS INT64),

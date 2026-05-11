@@ -6,6 +6,7 @@ SELECT
         0
     ) AS ts,
     COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.sessionId') AS INT64), 0) AS sessionId,
+    COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.action'), 'NA') AS action,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.auth'), 'NA') AS auth,
     COALESCE(JSON_VALUE(TO_JSON_STRING(src), '$.level'), 'NA') AS level,
     COALESCE(SAFE_CAST(JSON_VALUE(TO_JSON_STRING(src), '$.itemInSession') AS INT64), 0) AS itemInSession,

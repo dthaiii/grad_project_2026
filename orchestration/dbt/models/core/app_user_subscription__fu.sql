@@ -10,7 +10,7 @@
     }
 ) }}
 
-WITH status_by_day AS (
+WITH all_status_events AS (
     SELECT
         user_id,
         DATE(event_datetime) AS tf_partition_date,
@@ -19,9 +19,22 @@ WITH status_by_day AS (
             WHEN prev_level = 'free' THEN 'paid'
             ELSE 'free'
         END AS curr_level,
-        MAX(event_datetime) AS latest_event_datetime
+        event_datetime AS latest_event_datetime
     FROM {{ ref('stg_status_change_events__fa') }}
-    GROUP BY 1, 2, 3, 4
+),
+
+status_by_day AS (
+    SELECT
+        user_id,
+        tf_partition_date,
+        prev_level,
+        curr_level,
+        latest_event_datetime
+    FROM all_status_events
+    QUALIFY ROW_NUMBER() OVER (
+        PARTITION BY user_id, tf_partition_date
+        ORDER BY latest_event_datetime DESC
+    ) = 1
 )
 
 {% if is_incremental() %}

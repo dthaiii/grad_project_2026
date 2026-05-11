@@ -84,6 +84,7 @@ schema = {
     "session_start_end_events": [
         {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"},
         {"name": "sessionId", "type": "INTEGER", "mode": "NULLABLE"},
+        {"name": "action", "type": "STRING", "mode": "NULLABLE"},
         {"name": "auth", "type": "STRING", "mode": "NULLABLE"},
         {"name": "level", "type": "STRING", "mode": "NULLABLE"},
         {"name": "itemInSession", "type": "INTEGER", "mode": "NULLABLE"},
@@ -106,6 +107,7 @@ schema = {
         {"name": "lastName", "type": "STRING", "mode": "NULLABLE"},
         {"name": "firstName", "type": "STRING", "mode": "NULLABLE"},
         {"name": "gender", "type": "STRING", "mode": "NULLABLE"},
+        {"name": "level", "type": "STRING", "mode": "NULLABLE"},
         {"name": "registration", "type": "INTEGER", "mode": "NULLABLE"},
         {"name": "ts", "type": "INTEGER", "mode": "NULLABLE"}
     ]

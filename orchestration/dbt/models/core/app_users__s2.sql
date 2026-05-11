@@ -11,7 +11,11 @@ SELECT
     gender,
     registration_datetime,
     level,
-    dbt_valid_from AS row_effective_datetime,
+    CASE 
+        WHEN ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY dbt_valid_from) = 1 
+        THEN TIMESTAMP('1900-01-01')
+        ELSE dbt_valid_from 
+    END AS row_effective_datetime,
     COALESCE(dbt_valid_to, TIMESTAMP('3000-01-01')) AS row_expiry_datetime,
     tf_created_at,
     tf_updated_at,

@@ -62,3 +62,23 @@ models:
         tests: [not_null]
       - name: tf_etl_at
         tests: [not_null]
+
+  - name: stg_auth_events__fa
+    description: Auth events append-only staging.
+    columns:
+      - name: event_datetime
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+
+  - name: stg_session_start_end_events__fa
+    description: Session start and end events append-only staging.
+    columns:
+      - name: event_datetime
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]

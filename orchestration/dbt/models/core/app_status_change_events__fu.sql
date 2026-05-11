@@ -38,9 +38,8 @@ base_rows AS (
       ON status.user_id = users.user_id
      AND status.event_datetime >= users.row_effective_datetime
      AND status.event_datetime < users.row_expiry_datetime
-),
+){% if is_incremental() %},
 
-{% if is_incremental() %}
 existing AS (
     SELECT status_change_event_key, tf_created_at
     FROM {{ this }}

@@ -79,3 +79,27 @@ models:
         tests:
           - accepted_values:
               values: [0, 1]
+
+  - name: app_auth_events__fa
+    tests:
+      - unique:
+          column_name: auth_event_key
+    columns:
+      - name: auth_event_key
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]
+
+  - name: app_session_start_end_events__fa
+    tests:
+      - unique:
+          column_name: session_state_event_key
+    columns:
+      - name: session_state_event_key
+        tests: [not_null]
+      - name: tf_sourcing_at
+        tests: [not_null]
+      - name: tf_etl_at
+        tests: [not_null]

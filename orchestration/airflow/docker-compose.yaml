@@ -37,13 +37,15 @@
 #                                Default: ''
 #
 # Feel free to modify this file to suit your needs.
----
-x-airflow-common:
-  &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  
+  # Đã xoá bỏ AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT vì đã được khởi tạo qua CLI ở airflow-init
+  # _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- dbt-bigquery==1.0.0 astronomer-cosmos}
+
+---
+x-airflow-common:
+  &airflow-common
   build: 
     context: .
     dockerfile: ./Dockerfile
@@ -61,6 +63,10 @@ x-airflow-common:
     AIRFLOW__CELERY__WORKER_CONCURRENCY: 1
     AIRFLOW__CELERY__WORKER_PREFETCH_MULTIPLIER: 1
     AIRFLOW__WEBSERVER__WORKERS: 1
+    AIRFLOW__WEBSERVER__WTF_CSRF_ENABLED: 'false'
+    AIRFLOW__WEBSERVER__ENABLE_PROXY_FIX: 'false'
+    AIRFLOW__WEBSERVER__COOKIE_SAMESITE: 'Lax'
+    AIRFLOW__WEBSERVER__COOKIE_SECURE: 'false'
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
@@ -68,10 +74,8 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKEND: 'airflow.api.auth.backend.basic_auth'
-    #_PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- dbt-bigquery==1.0.0 astronomer-cosmos}
     GOOGLE_APPLICATION_CREDENTIALS: /.google/credentials/google_credentials.json
     DBT_GOOGLE_BIGQUERY_KEYFILE: /.google/credentials/google_credentials.json
-    # Đã xoá bỏ AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT vì đã được khởi tạo qua CLI ở airflow-init
     GCP_PROJECT_ID: '${GCP_PROJECT_ID}'
     GCP_GCS_BUCKET: '${GCP_GCS_BUCKET}'
     BIGQUERY_DATASET: '${BIGQUERY_DATASET}'

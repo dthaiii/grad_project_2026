@@ -73,9 +73,12 @@ final_join AS (
       ON ep.user_id = users.user_id
      AND ep.session_start_datetime >= users.row_effective_datetime
      AND ep.session_start_datetime < users.row_expiry_datetime
-    LEFT JOIN {{ ref('app_locations__snp') }} AS loc
-      ON ep.postal_code = loc.raw_postal_code
-     AND UPPER(TRIM(ep.city)) = UPPER(TRIM(loc.city))
+    LEFT JOIN (
+        SELECT city, state_code, MIN(pk_location) as pk_location
+        FROM {{ ref('app_locations__snp') }}
+        GROUP BY 1, 2
+    ) AS loc
+      ON UPPER(TRIM(ep.city)) = UPPER(TRIM(loc.city))
      AND UPPER(TRIM(ep.state)) = UPPER(TRIM(loc.state_code))
     LEFT JOIN {{ ref('app_pages__snp') }} AS pages
       ON ep.first_page = pages.page_name
