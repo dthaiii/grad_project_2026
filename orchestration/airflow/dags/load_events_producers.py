@@ -60,12 +60,12 @@ def create_producer_dag(event):
         default_args=default_args,
         description=f'Hourly data pipeline to load {event} to BigQuery',
         schedule_interval="5 * * * *",
-        start_date=datetime(2026, 3, 15),
-        end_date=datetime(2026, 4, 30),
+        start_date=datetime(2026, 5, 1),
+        end_date=datetime(2026, 5, 12),
         catchup=True,
         max_active_runs=1,
         user_defined_macros=MACRO_VARS,
-        tags=['eventdata', 'producer', 'backfill']
+        tags=['eventdata', 'producer']
     )
     
     with dag:
