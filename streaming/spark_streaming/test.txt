@@ -36,3 +36,9 @@ export SPARK_TRIGGER_INTERVAL='30 seconds'
   --archives pyspark_env.tar.gz#environment \
   --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 \
   stream_all_events.py
+
+  ``````````````````````
+cd /home/duythai/grad_project_2026/streaming/spark_streaming
+export PYSPARK_DRIVER_PYTHON=/opt/conda/default/bin/python3
+/usr/lib/spark/bin/spark-submit --master yarn --deploy-mode client --conf spark.executorEnv.PYSPARK_PYTHON=/opt/conda/default/bin/python3 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=/opt/conda/default/bin/python3 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 stream_all_events.py
+/usr/lib/spark/bin/spark-submit --master yarn --deploy-mode client --conf spark.executorEnv.PYSPARK_PYTHON=/opt/conda/default/bin/python3 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=/opt/conda/default/bin/python3 --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.0.3 stream_all_events.py

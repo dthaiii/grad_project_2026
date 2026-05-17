@@ -24,11 +24,11 @@ USER_INFO_TOPIC = "user_info"
 
 KAFKA_PORT = os.getenv("KAFKA_PORT", "9092")
 
-KAFKA_ADDRESS = os.getenv("KAFKA_ADDRESS", '10.128.0.19')
+KAFKA_ADDRESS = os.getenv("KAFKA_ADDRESS", '10.128.0.8')
 SPARK_STARTING_OFFSETS = os.getenv("SPARK_STARTING_OFFSETS", "earliest")
 SPARK_MAX_OFFSETS_PER_TRIGGER = int(os.getenv("SPARK_MAX_OFFSETS_PER_TRIGGER", "50000"))
 SPARK_TRIGGER_INTERVAL = os.getenv("SPARK_TRIGGER_INTERVAL", "60 seconds")
-GCP_GCS_BUCKET = os.getenv("GCP_GCS_BUCKET", 'raw-data-bucket-2026')
+GCP_GCS_BUCKET = os.getenv("GCP_GCS_BUCKET", 'data-grad2026')
 GCS_STORAGE_PATH = f'gs://{GCP_GCS_BUCKET}'
 
 # Generate unique consumer group ID to force consuming from EARLIEST
